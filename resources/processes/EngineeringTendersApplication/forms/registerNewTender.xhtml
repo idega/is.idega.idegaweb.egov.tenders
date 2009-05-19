@@ -1,0 +1,401 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:idega="http://idega.com/xforms"
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <head>
+        <title>
+            <xf:output model="data_model" ref="instance('localized_strings')/form-title[@lang=instance('localized_strings')/current_language]"/>
+        </title>
+        <xf:model id="submission_model" schema="#fb-schema">
+            <xf:instance id="data-instance" xmlns="">
+                <data>
+                    <form_id>84</form_id>
+                    <Identifier_number_fbc_51 mapping="string_caseIdentifier" nodeType="formIdentifier"/>
+                    
+                    <Tender_name_fbc_10 mapping="string_caseDescription"/>
+                    <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
+                    <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
+                    <The_last_day_for_questions_fbc_14 xsi:nil="true" mapping="date_lastDayForQuestions"/>
+                    <When_the_tender_should_be_displayed_fbc_15 xsi:nil="true" mapping="date_whenTheTenderShouldBeDisplayed"/>
+                    <Questions_answered_before_date_fbc_16 xsi:nil="true" mapping="date_lastDayToAnswerQuestions"/>
+                    <The_last_day_to_send_in_bids_fbc_17 xsi:nil="true" mapping="date_lastDayToSendBids"/>
+                    <Attachments_fbc_18 mapping="files_tenderApplicationFiles">
+                        <group/>
+                        <entry filename="" mediatype="">
+                            <description/>
+                        </entry>
+                        <entry filename="" mediatype="">
+                            <description/>
+                        </entry>
+                    </Attachments_fbc_18>
+                    
+                    <saveFormData>
+                        <submissionId/>
+                    </saveFormData>
+                </data>
+            </xf:instance>
+            <xf:instance id="control-instance">
+                <control xmlns="">
+                    <required>true</required>
+                    <readonly>false</readonly>
+                    <submission>false</submission>
+                    <generatePdf>false</generatePdf>
+                    <sendLinkSubmission>false</sendLinkSubmission>
+                    <submissionButton/>
+                    <controlsButton/>
+                </control>
+            </xf:instance>
+            <xf:instance id="error-instance" xmlns="">
+                 <data>
+                    <error for=""/>
+                    <sendLinkError for=""/>
+                </data>
+            </xf:instance>
+            <xf:instance id="saveForm-instance">
+                <data xmlns="">
+              	  <sendLinkEmail xsi:nil="true"/>
+                    <link/>
+                    <savePhase>false</savePhase>
+                </data>
+            </xf:instance>
+			<xf:bind id="errorsGroup" idega:shared="true"
+                nodeset="instance('error-instance')/error" relevant="instance('control-instance')/submission = 'true' and instance('saveForm-instance')/savePhase != 'true' and count-non-empty(instance('error-instance')/error)!=0"/>
+            <xf:bind id="errors" idega:shared="true" nodeset="instance('error-instance')/error[. != '']"/>
+            <xf:bind id="bind-submissionButton" idega:shared="true"
+                nodeset="instance('control-instance')/submissionButton" relevant="instance('control-instance')/readonly != 'true' and instance('control-instance')/generatePdf != 'true'"/>
+            
+            <xf:submission action="xformsBPM:/nouri" id="submit_data_submission" method="post" ref="instance('data-instance')" replace="none">
+                <idega:saveForm action="submissionComplete" ev:event="xforms-submit-done" instanceId="data-instance" submissionId="instance('data-instance')/saveFormData/submissionId"/>
+                <idega:toggle case="fbc_4" ev:event="xforms-submit-done"/>
+            </xf:submission>
+            
+            <xf:action ev:event="xforms-submit-error" id="submission-error">
+                <xf:dispatch name="idega-submit-error" target="idega-submission-error"/>
+            </xf:action>
+            <xf:action ev:event="idega-submit-error" id="idega-submission-error">
+                <xf:message level="modeless" ref="instance('localized_strings')/submission-error_message[@lang=instance('localized_strings')/current_language]"/>
+            </xf:action>
+            <xf:bind id="fbc_10_bind" nodeset="Tender_name_fbc_10"
+                readonly="instance('control-instance')/readonly = 'true'"
+                required="instance('control-instance')/required = 'true'" type="xs:string"/>
+            <xf:bind id="fbc_11_bind"
+                nodeset="Who_is_issuing_the_tender_fbc_11"
+                readonly="instance('control-instance')/readonly = 'true'"
+                required="instance('control-instance')/required = 'true'" type="xs:string"/>
+            <xf:bind id="fbc_12_bind"
+                nodeset="Description_of_job_fbc_12"
+                readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
+            <xf:bind id="fbc_14_bind"
+                nodeset="The_last_day_for_questions_fbc_14"
+                required="instance('control-instance')/required = 'true'" type="date"/>
+            <xf:bind id="fbc_15_bind"
+                nodeset="When_the_tender_should_be_displayed_fbc_15"
+                required="instance('control-instance')/required = 'true'" type="date"/>
+            <xf:bind id="fbc_16_bind"
+                nodeset="Questions_answered_before_date_fbc_16"
+                required="instance('control-instance')/required = 'true'" type="date"/>
+            <xf:bind id="fbc_17_bind"
+                nodeset="The_last_day_to_send_in_bids_fbc_17"
+                required="instance('control-instance')/required = 'true'" type="date"/>
+            <xf:bind id="fbc_18_bind" nodeset="Attachments_fbc_18/group" relevant="instance('control-instance')/readonly != 'true' and instance('control-instance')/generatePdf != 'true'">
+                <xf:bind id="fbc_18_bind-entries"
+                    nodeset="../entry[position() != last()]" type="xs:anyURI"/>
+            </xf:bind>
+        </xf:model>
+        <xf:model id="data_model">
+            <xf:instance id="localized_strings" xmlns="">
+                <localized_strings>
+                    <default_language>en</default_language>
+                    <current_language>en</current_language>
+                    <form-title lang="en">Register new tender</form-title>
+                    <form-title lang="is_IS">Formið mitt</form-title>
+                    <page-1-label lang="en"/>
+                    <page-1-label lang="is_IS">Skref x af y</page-1-label>
+                    <page-2-label lang="en">Form submitted</page-2-label>
+                    <page-2-label lang="is_IS">Form sent</page-2-label>
+                    <page-1-submit_button-label lang="en">Submit</page-1-submit_button-label>
+                    <page-1-submit_button-label lang="is_IS">Senda</page-1-submit_button-label>
+                    <page-1-save-label lang="en">Save</page-1-save-label>
+                    <page-1-save-label lang="is_IS">Vista og geyma</page-1-save-label>
+                    <submission-error_message lang="en">Submission error. Please check your form!</submission-error_message>
+                    <submission-error_message lang="is_IS">Villa varð við að senda formið vinsamlegast athugið hvort stjörnumerktir reitir hafi allir verið útfylltir og að engar villur séu í forminu.</submission-error_message>
+                    <submission-success_message lang="en">Your form has been received. Thank you.</submission-success_message>
+                    <submission-success_message lang="is_IS">Formið hefur verið móttekið. Takk fyrir.</submission-success_message>
+                    <save-success_message lang="en">The form was saved</save-success_message>
+                    <save-success_message lang="is_IS">Umsóknin var vistuð og þú getur nálgast hana aftur með hlekknum hér að neðan</save-success_message>
+                    <save-success_label lang="en">Saved</save-success_label>
+                    <save-success_label lang="is_IS">Saved</save-success_label>
+                    <fbc_9-text lang="is_IS">Umsókn um útboð</fbc_9-text>
+                    <fbc_9-text lang="en">Tender application</fbc_9-text>
+                    <fbc_10-label lang="is_IS">Fyrirsögn (heiti útboðs)</fbc_10-label>
+                    <fbc_10-label lang="en">Tender name</fbc_10-label>
+                    <fbc_11-label lang="is_IS">Verkkaupi</fbc_11-label>
+                    <fbc_11-label lang="en">Who is issuing the tender</fbc_11-label>
+                    <fbc_12-label lang="is_IS">Lýsing á verki</fbc_12-label>
+                    <fbc_12-label lang="en">Description of job</fbc_12-label>
+                    <fbc_14-label lang="is_IS">Fyrirspurnarfrestur</fbc_14-label>
+                    <fbc_14-label lang="en">The last day for questions</fbc_14-label>
+                    <fbc_15-label lang="is_IS">Birting útboðs</fbc_15-label>
+                    <fbc_15-label lang="en">When the tender should be displayed</fbc_15-label>
+                    <fbc_16-label lang="is_IS">Svarfrestur fyrirspurna</fbc_16-label>
+                    <fbc_16-label lang="en">Questions answered before date</fbc_16-label>
+                    <fbc_17-label lang="is_IS">Skil á tilboðum</fbc_17-label>
+                    <fbc_17-label lang="en">The last day to send in bids</fbc_17-label>
+                    <fbc_18-paragraph-text lang="is_IS">Mögulegt er að senda viðbótarupplýsingar í viðhengi</fbc_18-paragraph-text>
+                    <fbc_18-paragraph-text lang="en">Additional information can be sent with the form as attachments</fbc_18-paragraph-text>
+                    <fbc_18-title lang="is_IS">Viðhengi</fbc_18-title>
+                    <fbc_18-title lang="en">Attachments</fbc_18-title>
+                    <fbc_18-insert_trigger-label lang="is_IS">Bæta við viðhengi</fbc_18-insert_trigger-label>
+                    <fbc_18-insert_trigger-label lang="en">Add attachment</fbc_18-insert_trigger-label>
+                    <fbc_18-description-label lang="is_IS">Lýsandi nafn skjals</fbc_18-description-label>
+                    <fbc_18-description-label lang="en">Descriptive name</fbc_18-description-label>
+                    <fbc_18-filename-label lang="is_IS">Skráarnafn</fbc_18-filename-label>
+                    <fbc_18-filename-label lang="en">Uploaded file name</fbc_18-filename-label>
+                    <fbc_18-custom lang="is_IS">Það þarf að setja lýsandi nafn á skjalið</fbc_18-custom>
+                    <fbc_18-custom lang="en">Uploaded file description can not be empty</fbc_18-custom>
+                    <fbc_18-remove_trigger-label lang="is_IS">Fjarlægja viðhengi</fbc_18-remove_trigger-label>
+                    <fbc_18-remove_trigger-label lang="en">Remove</fbc_18-remove_trigger-label>
+                    <fbc_10-required lang="is_IS">Required</fbc_10-required>
+                    <fbc_10-required lang="en">Required</fbc_10-required>
+                    <fbc_11-required lang="is_IS">Required</fbc_11-required>
+                    <fbc_11-required lang="en">Required</fbc_11-required>
+                    <fbc_15-required lang="is_IS">Required</fbc_15-required>
+                    <fbc_15-required lang="en">Required</fbc_15-required>
+                    <fbc_14-required lang="is_IS">Required</fbc_14-required>
+                    <fbc_14-required lang="en">Required</fbc_14-required>
+                    <fbc_16-required lang="is_IS">Required</fbc_16-required>
+                    <fbc_16-required lang="en">Last day to answers questions must be provided</fbc_16-required>
+                    <fbc_17-required lang="is_IS">Required</fbc_17-required>
+                    <fbc_17-required lang="en">Required</fbc_17-required>
+                </localized_strings>
+            </xf:instance>
+            <xf:instance id="locale-instance" relevant="false()" src="context:fb-afk-loginSession.currentLocale"/>
+            <xf:action ev:event="xforms-ready">
+                <idega:dispatch name="idega-xforms-ready" target="//h:body//*[starts-with(@id, 'fbc_')]"/>
+                <xf:setvalue model="data_model"
+                    ref="instance('localized_strings')/current_language" value="instance('locale-instance')/fb-afk-loginSession.currentLocale"/>
+                <xf:setvalue
+                    if="instance('control-instance')/generatePdf='true'"
+                    model="submission_model"
+                    ref="instance('control-instance')/required" value="'false'"/>
+            </xf:action>
+        </xf:model>
+        <xs:schema id="fb-schema"/>
+        <xf:model id="x-autofill-model">
+            <xf:action ev:event="xforms-ready"/>
+        </xf:model>
+    </head>
+    <body>
+        <xf:group appearance="full">
+            <xf:group bind="errorsGroup" class="xformErrors">
+                <xf:repeat bind="errors">
+                    <xf:output ref="."/>
+                </xf:repeat>
+            </xf:group>
+            <idega:setError ev:event="idega-validation-error"
+                id="formSetErrorHandler"
+                if="idega:instance('submission_model', 'saveForm-instance')/savePhase != 'true'" ref="instance('error-instance')/error"/>
+            <idega:switch>
+                <idega:case id="fbc_1" show="instance('control-instance')/generatePdf='true'">
+                    <xf:group appearance="full">
+                        <xf:label model="data_model" ref="instance('localized_strings')/page-1-label[@lang=instance('localized_strings')/current_language]"/>
+                        <div class="fbc_header_text" id="fbc_9" type="fbc_header_text">
+                            <xf:output model="data_model" ref="instance('localized_strings')/fbc_9-text[@lang=instance('localized_strings')/current_language]"/>
+                        </div>
+                        <xf:input bind="fbc_10_bind" id="fbc_10" type="fbc_text">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_10-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:dispatch ev:event="idega-xforms-ready"
+                                name="idega-validate" target="fbc_10"/>
+                            <xf:dispatch ev:event="xforms-value-changed"
+                                name="idega-validate" target="fbc_10"/>
+                            <idega:validator ev:event="idega-validate">
+                                <idega:message errorType="required"
+                                    model="data_model" value="instance('localized_strings')/fbc_10-required[@lang=instance('localized_strings')/current_language]"/>
+                            </idega:validator>
+                            <xf:alert ref="instance('error-instance')/error[@for='fbc_10']"/>
+                        </xf:input>
+                        <xf:input bind="fbc_11_bind" id="fbc_11" type="fbc_text">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_11-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:dispatch ev:event="idega-xforms-ready"
+                                name="idega-validate" target="fbc_11"/>
+                            <xf:dispatch ev:event="xforms-value-changed"
+                                name="idega-validate" target="fbc_11"/>
+                            <idega:validator ev:event="idega-validate">
+                                <idega:message errorType="required"
+                                    model="data_model" value="instance('localized_strings')/fbc_11-required[@lang=instance('localized_strings')/current_language]"/>
+                            </idega:validator>
+                            <xf:alert ref="instance('error-instance')/error[@for='fbc_11']"/>
+                        </xf:input>
+                        <xf:textarea bind="fbc_12_bind" id="fbc_12" type="fbc_textarea">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_12-label[@lang=instance('localized_strings')/current_language]"/>
+                        </xf:textarea>
+                        <xf:input bind="fbc_15_bind" id="fbc_15" type="fbc_date">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_15-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:dispatch ev:event="idega-xforms-ready"
+                                name="idega-validate" target="fbc_15"/>
+                            <xf:dispatch ev:event="xforms-value-changed"
+                                name="idega-validate" target="fbc_15"/>
+                            <idega:validator ev:event="idega-validate">
+                                <idega:message errorType="required"
+                                    model="data_model" value="instance('localized_strings')/fbc_15-required[@lang=instance('localized_strings')/current_language]"/>
+                            </idega:validator>
+                            <xf:alert ref="instance('error-instance')/error[@for='fbc_15']"/>
+                        </xf:input>
+                        <xf:input bind="fbc_14_bind" id="fbc_14" type="fbc_date">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_14-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:dispatch ev:event="idega-xforms-ready"
+                                name="idega-validate" target="fbc_14"/>
+                            <xf:dispatch ev:event="xforms-value-changed"
+                                name="idega-validate" target="fbc_14"/>
+                            <idega:validator ev:event="idega-validate">
+                                <idega:message errorType="required"
+                                    model="data_model" value="instance('localized_strings')/fbc_14-required[@lang=instance('localized_strings')/current_language]"/>
+                            </idega:validator>
+                            <xf:alert ref="instance('error-instance')/error[@for='fbc_14']"/>
+                        </xf:input>
+                        <xf:input bind="fbc_16_bind" id="fbc_16" type="fbc_date">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_16-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:dispatch ev:event="idega-xforms-ready"
+                                name="idega-validate" target="fbc_16"/>
+                            <xf:dispatch ev:event="xforms-value-changed"
+                                name="idega-validate" target="fbc_16"/>
+                            <idega:validator ev:event="idega-validate">
+                                <idega:message errorType="required"
+                                    model="data_model" value="instance('localized_strings')/fbc_16-required[@lang=instance('localized_strings')/current_language]"/>
+                            </idega:validator>
+                            <xf:alert ref="instance('error-instance')/error[@for='fbc_16']"/>
+                        </xf:input>
+                        <xf:input bind="fbc_17_bind" id="fbc_17" type="fbc_date">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_17-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:dispatch ev:event="idega-xforms-ready"
+                                name="idega-validate" target="fbc_17"/>
+                            <xf:dispatch ev:event="xforms-value-changed"
+                                name="idega-validate" target="fbc_17"/>
+                            <idega:validator ev:event="idega-validate">
+                                <idega:message errorType="required"
+                                    model="data_model" value="instance('localized_strings')/fbc_17-required[@lang=instance('localized_strings')/current_language]"/>
+                            </idega:validator>
+                            <xf:alert ref="instance('error-instance')/error[@for='fbc_17']"/>
+                        </xf:input>
+                        <xf:group appearance="full" bind="fbc_18_bind"
+                            id="fbc_18" type="fbc_multiupload">
+                            <idega:dispatch
+                                ev:event="idega-xforms-ready"
+                                name="idega-validate" stopOnError="true" target="//*[@id='fbc_18']//xf:upload"/>
+                            <div class="fbc_simple_text">
+                                <xf:output model="data_model" ref="instance('localized_strings')/fbc_18-paragraph-text[@lang=instance('localized_strings')/current_language]"/>
+                            </div>
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_18-title[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:trigger>
+                                <xf:label model="data_model" ref="instance('localized_strings')/fbc_18-insert_trigger-label[@lang=instance('localized_strings')/current_language]"/>
+                                <xf:action>
+                                    <xf:insert at="last()"
+                                    nodeset="instance('data-instance')/Attachments_fbc_18/entry" position="before"/>
+                                </xf:action>
+                            </xf:trigger>
+                            <xf:repeat appearance="group"
+                                bind="fbc_18_bind-entries" id="fbc_18-multiupload_entries">
+                                <xf:group>
+                                    <xf:input ref="./description">
+                                    <xf:label model="data_model" ref="instance('localized_strings')/fbc_18-description-label[@lang=instance('localized_strings')/current_language]"/>
+                                    <idega:dispatch
+                                    ev:event="xforms-value-changed"
+                                    name="idega-validate"
+                                    stopOnError="true" target="//*[@id='fbc_18']//xf:upload"/>
+                                    </xf:input>
+                                    <xf:group appearance="minimal"
+                                    class="error" ref=".[. !='' and ./description ='']">
+                                    <xf:output value="instance('error-instance')/error[@for='fbc_18']"/>
+                                    </xf:group>
+                                    <xf:output ref="@filename">
+                                    <xf:label model="data_model" ref="instance('localized_strings')/fbc_18-filename-label[@lang=instance('localized_strings')/current_language]"/>
+                                    </xf:output>
+                                    <xf:upload ref=".">
+                                    <xf:filename ref="@filename"/>
+                                    <xf:mediatype ref="@mediatype"/>
+                                    <idega:dispatch
+                                    ev:event="xforms-value-changed"
+                                    name="idega-validate"
+                                    stopOnError="true" target="//*[@id='fbc_18']//xf:upload"/>
+                                    <idega:validator
+                                    componentId="fbc_18"
+                                    ev:event="idega-validate" validateif="(.!='' and ./description !='') or (.='' and ./description ='')">
+                                    <idega:message
+                                    errorType="custom"
+                                    model="data_model" value="instance('localized_strings')/fbc_18-custom[@lang=instance('localized_strings')/current_language]"/>
+                                    </idega:validator>
+                                    </xf:upload>
+                                    <xf:trigger>
+                                    <xf:label model="data_model" ref="instance('localized_strings')/fbc_18-remove_trigger-label[@lang=instance('localized_strings')/current_language]"/>
+                                    <xf:action>
+                                    <xf:delete
+                                    at="index('fbc_18-multiupload_entries')" nodeset="instance('data-instance')/Attachments_fbc_18/entry"/>
+                                    </xf:action>
+                                    </xf:trigger>
+                                </xf:group>
+                            </xf:repeat>
+                        </xf:group>
+                        <div class="fbc_button_area" id="fbc_2" type="fbc_button_area">
+                        	<xf:trigger bind="bind-submissionButton"
+                                class="fbc_button_submit" id="fbc_82">
+                                <xf:label model="data_model" ref="instance('localized_strings')/page-1-save-label[@lang=instance('localized_strings')/current_language]"/>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:setvalue
+                                    model="submission_model" ref="instance('saveForm-instance')/savePhase">true</xf:setvalue>
+                                    <xf:dispatch name="xforms-rebuild" target="data_model"/>
+                                    <xf:dispatch
+                                    name="xforms-recalculate" target="data_model"/>
+                                    <xf:dispatch
+                                    name="xforms-revalidate" target="data_model"/>
+                                    <xf:dispatch name="xforms-refresh" target="data_model"/>
+                                    <idega:saveForm action="save"
+                                    formId="instance('data-instance')/form_id"
+                                    instanceId="data-instance"
+                                    linkLocation="instance('saveForm-instance')/link"
+                                    model="submission_model"
+                                    submissionId="instance('data-instance')/saveFormData/submissionId" submissionIdentifier="instance('data-instance')/*[@nodeType='formIdentifier']"/>
+                                    <idega:toggle case="fbc_400"/>
+                                </xf:action>
+                            </xf:trigger>
+                            <xf:trigger bind="bind-submissionButton"
+                                class="fbc_button_submit" id="fbc_3" type="fbc_button_submit">
+                                <xf:label model="data_model" ref="instance('localized_strings')/page-1-submit_button-label[@lang=instance('localized_strings')/current_language]"/>
+                                <xf:action ev:event="DOMActivate">
+                                    <xf:setvalue
+                                    ref="instance('control-instance')/submission" value="'true'"/>
+                                    <idega:dispatch
+                                    name="idega-validate" target="//h:body//*[starts-with(@id, 'fbc_')]"/>
+                                    <xf:dispatch name="xforms-rebuild" target="data_model"/>
+                                    <xf:dispatch
+                                    name="xforms-recalculate" target="data_model"/>
+                                    <xf:dispatch
+                                    name="xforms-revalidate" target="data_model"/>
+                                    <xf:dispatch name="xforms-refresh" target="data_model"/>
+                                    <xf:action if="count-non-empty(instance('error-instance')/error)=0">
+                                    <xf:send submission="submit_data_submission"/>
+                                    </xf:action>
+                                    <xf:dispatch
+                                    if="count-non-empty(instance('error-instance')/error)!=0"
+                                    name="idega-submit-error" target="idega-submission-error"/>
+                                </xf:action>
+                            </xf:trigger>
+                        </div>
+                    </xf:group>
+                </idega:case>
+                <idega:case id="fbc_4" type="thx_page">
+                    <xf:group appearance="full" class="thx_page">
+                        <xf:label model="data_model" ref="instance('localized_strings')/page-2-label[@lang=instance('localized_strings')/current_language]"/>
+                        <xf:output model="data_model" ref="instance('localized_strings')/submission-success_message[@lang=instance('localized_strings')/current_language]"/>
+                    </xf:group>
+                </idega:case>
+                <idega:case id="fbc_400" type="save_page">
+                    <xf:group appearance="full" class="save_page">
+                        <xf:label model="data_model" ref="instance('localized_strings')/save-success_label[@lang=instance('localized_strings')/current_language]"/>
+                        <xf:output model="data_model" ref="instance('localized_strings')/save-success_message[@lang=instance('localized_strings')/current_language]"/>
+                    </xf:group>
+                </idega:case>
+            </idega:switch>
+        </xf:group>
+    </body>
+</html>

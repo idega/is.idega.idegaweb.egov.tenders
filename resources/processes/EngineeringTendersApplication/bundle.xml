@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<processBundle-config>
+
+    <processBundle beanIdentifier="casesBPMProcessBundle" processManagerType="cases" />
+    
+    <tasks>
+        <task name="Register New Tender" initial="true">
+            <viewResource resourceIdentifier="forms/registerNewTender.xhtml" viewType="xforms" viewResourceType="xforms" />
+        </task>
+        <task name="Submit Process Ruling">
+            <viewResource resourceIdentifier="forms/submitProcessRuling.xhtml" viewType="xforms" viewResourceType="xforms" />
+        </task>
+        <task name="Complete process">
+            <viewResource resourceIdentifier="forms/completeProcess.xhtml" viewType="xforms" viewResourceType="xforms" />
+        </task>
+    </tasks>
+    
+</processBundle-config>

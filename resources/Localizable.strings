@@ -1,0 +1,8 @@
+cases_bpm.newCaseArrived.subject=New case has been created
+cases_bpm.newCaseArrived.message=Hello, {0}. New {1} case with identifier {2} and description {3} has been created.
+cases_bpm.thankOwnerForNewCase.subject=Case created successfully!
+cases_bpm.thankOwnerForNewCase.message=Hello, {0}. You have successfully created case {1} with identifier {2} and description {3}. You can access case related information in your cases list at {4}. We are hopeful that your case will be handled soon. Good luck!
+cases_bpm.processRulingSubmitted.subject=Process ruling has been submitted
+cases_bpm.processRulingSubmitted.message=Hello, {0}. Process ruling has been submitted and it now viewable in your case {1} list with identifier {2} and description {3}.
+cases_bpm.additionalInfoForOwner.subject=Additional information needed
+cases_bpm.additionalInfoForOwner.message=Hello, {0}. Please, fill out the new form in your forms list, for supplying additional information.
