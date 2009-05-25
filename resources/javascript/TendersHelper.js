@@ -3,19 +3,24 @@ var TendersHelper = {};
 TendersHelper.subscribe = function(message, caseId, processInstanceId) {
 	showLoadingMessage(message);
 	TendersSubscriber.subscribe(caseId, processInstanceId, {
-		callback: function(uri) {
+		callback: function(result) {
 			closeAllLoadingMessages();
 			
-			if (uri == null) {
+			if (result == null) {
 				return false;
 			}
 			
-			/*if (uri.indexOf('/pages/') != 0) {
-				humanMsg.displayMsg(uri, null);
+			if (result.value == null || result.value == '') {
+				humanMsg.displayMsg(result.id, null);
 				return false;
-			}*/
+			}
 			
-			window.location.href = uri;
+			humanMsg.displayMsg(result.id, {
+				timeout: 3000,
+				callback: function() {
+					window.location.href = result.value;
+				}
+			});
 		}
 	});
 }

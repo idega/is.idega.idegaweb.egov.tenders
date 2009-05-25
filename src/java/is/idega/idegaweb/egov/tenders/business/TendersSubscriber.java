@@ -1,5 +1,7 @@
 package is.idega.idegaweb.egov.tenders.business;
 
+import is.idega.idegaweb.egov.tenders.TendersConstants;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,10 +15,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.idega.block.process.business.CaseBusiness;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.dwr.business.DWRAnnotationPersistance;
 import com.idega.idegaweb.IWApplicationContext;
+import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.user.data.User;
 import com.idega.util.CoreUtil;
@@ -26,9 +30,9 @@ import com.idega.util.StringUtil;
  * DWR and Spring bean to handle Tenders logic
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
- * Last modified: $Date: 2009/05/25 13:51:37 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/25 14:15:33 $ by: $Author: valdas $
  */
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 @Service(TendersSubscriber.SPRING_BEAN_NAME)
@@ -47,37 +51,48 @@ public class TendersSubscriber implements DWRAnnotationPersistance {
 	private TendersHelper tendersHelper;
 	
 	@RemoteMethod
-	public String subscribe(String caseId, Long processInstanceId) {
+	public AdvancedProperty subscribe(String caseId, Long processInstanceId) {
+		String errorMessage = "Sorry, unable to subscribe to this case";
+		AdvancedProperty result = new AdvancedProperty(errorMessage);
+		
 		if (StringUtil.isEmpty(caseId) || processInstanceId == null) {
-			return null;
+			return result;
 		}
 		
 		IWContext iwc = CoreUtil.getIWContext();
 		if (iwc == null) {
-			return null;
+			return result;
 		}
+		
+		IWResourceBundle iwrb = iwc.getIWMainApplication().getBundle(TendersConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 		
 		User currentUser = iwc.isLoggedOn() ? iwc.getCurrentUser() : null;
 		if (currentUser == null) {
 			LOGGER.warning("Can not add case ('"+caseId+"') to user's cases because user is not logged on!");
-			return null;
+			result.setId(iwrb.getLocalizedString("tenders_subscriber.error_user_not_logged", "Unable to subscribe to this case because you are not logged in"));
+			return result;
 		}
 		
 		String uri = tendersHelper.getLinkToSubscribedCase(iwc, currentUser, processInstanceId);
 		if (StringUtil.isEmpty(uri)) {
 			LOGGER.warning("Unable to resolve URI to case: " + caseId);
-			return null;
+			result.setId(iwrb.getLocalizedString("tenders_subscriber.error_generating_case_viewer_link", errorMessage));
+			return result;
 		}
 
 		CaseBusiness caseBusiness = getCaseBusiness(iwc);
 		if (caseBusiness == null) {
-			return null;
+			result.setId(iwrb.getLocalizedString("tenders_subscriber.error_subscribing", errorMessage));
+			return result;
 		}
 		if (caseBusiness.addSubscriber(caseId, currentUser)) {
-			return uri;
+			result.setValue(uri);
+			result.setId(iwrb.getLocalizedString("tenders_subscriber.successfully_subscribed", "You have successfully subscribed to this case"));
+			return result;
 		}
 		
-		return null;
+		result.setId(iwrb.getLocalizedString("tenders_subscriber.error_subscribing", errorMessage));
+		return result;
 	}
 	
 	private CaseBusiness getCaseBusiness(IWApplicationContext iwac) {
