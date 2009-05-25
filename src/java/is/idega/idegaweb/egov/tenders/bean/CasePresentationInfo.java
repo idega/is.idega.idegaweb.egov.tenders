@@ -11,9 +11,9 @@ import com.idega.block.process.presentation.beans.CasePresentation;
  * Simple POJO to store info about BPM case
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
- * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/25 14:28:57 $ by: $Author: valdas $
  */
 public class CasePresentationInfo {
 	private Long processInstanceId;
@@ -60,7 +60,14 @@ public class CasePresentationInfo {
 		return endDate;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void setEndDate(Timestamp endDate) {
+		if (endDate != null) {
+			endDate.setHours(23);
+			endDate.setMinutes(59);
+			endDate.setSeconds(59);
+			endDate.setNanos(999999999);
+		}
 		this.endDate = endDate;
 	}
 	
