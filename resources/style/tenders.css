@@ -1,0 +1,5 @@
+@CHARSET "UTF-8";
+
+div.formItem textarea {
+	max-width: 300px !important;
+}
