@@ -1,8 +1,8 @@
 package is.idega.idegaweb.egov.tenders.presentation;
 
 import is.idega.idegaweb.egov.cases.presentation.OpenCases;
-import is.idega.idegaweb.egov.tenders.CasePresentationInfo;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
+import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 import is.idega.idegaweb.egov.tenders.business.TendersSubscriber;
 
@@ -42,9 +42,9 @@ import com.idega.util.expression.ELUtil;
  * Viewer filters tenders cases
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
- * Last modified: $Date: 2009/05/25 13:51:37 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
  */
 public class TenderCasesViewer extends OpenCases {
 	

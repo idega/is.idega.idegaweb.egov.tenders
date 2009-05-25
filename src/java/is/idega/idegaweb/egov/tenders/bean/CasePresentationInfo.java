@@ -1,4 +1,4 @@
-package is.idega.idegaweb.egov.tenders;
+package is.idega.idegaweb.egov.tenders.bean;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import com.idega.block.process.presentation.beans.CasePresentation;
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
  * @version $Revision: 1.1 $
  *
- * Last modified: $Date: 2009/05/25 13:51:37 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
  */
 public class CasePresentationInfo {
 	private Long processInstanceId;

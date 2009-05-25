@@ -1,7 +1,7 @@
 package is.idega.idegaweb.egov.tenders.business;
 
-import is.idega.idegaweb.egov.tenders.CasePresentationInfo;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
+import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -51,9 +51,9 @@ import com.idega.util.StringUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
- * Last modified: $Date: 2009/05/25 13:51:37 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)

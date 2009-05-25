@@ -1,6 +1,6 @@
 package is.idega.idegaweb.egov.tenders.business;
 
-import is.idega.idegaweb.egov.tenders.CasePresentationInfo;
+import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 
 import java.util.Collection;
 import java.util.Locale;
@@ -15,9 +15,9 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
- * Last modified: $Date: 2009/05/25 13:51:37 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
