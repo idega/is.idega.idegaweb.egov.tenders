@@ -4,9 +4,9 @@ package is.idega.idegaweb.egov.tenders;
  * Constants for tenders bundle
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  *
- * Last modified: $Date: 2009/05/25 13:51:37 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/28 12:59:35 $ by: $Author: valdas $
  */
 public class TendersConstants {
 
@@ -20,5 +20,7 @@ public class TendersConstants {
 	public static final String TENDER_CASE_JOB_DESCRIPTION_VARIABLE = "string_descriptionOfJob";
 	
 	public static final String TENDER_CASES_CODE = "TENDER";
+	
+	public static final String SPECIAL_TENDER_CASE_PAGE_REDIRECTOR_REQUESTED = "specialTenderCasePageRedirectorRequested";
 	
 }

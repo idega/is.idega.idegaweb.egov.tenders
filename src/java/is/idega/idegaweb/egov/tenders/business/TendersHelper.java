@@ -15,9 +15,9 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  *
- * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/28 12:59:35 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
@@ -32,4 +32,6 @@ public interface TendersHelper {
 	public String getLinkToSubscribedCase(IWContext iwc, User user, String caseId);
 	
 	public String getLinkToSubscribedCase(IWContext iwc, User user, Long processInstanceId);
+	
+	public boolean doSubscribeToCase(IWContext iwc, User user, String caseId);
 }

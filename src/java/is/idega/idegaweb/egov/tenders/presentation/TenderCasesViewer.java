@@ -42,9 +42,9 @@ import com.idega.util.expression.ELUtil;
  * Viewer filters tenders cases
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  *
- * Last modified: $Date: 2009/05/28 07:07:10 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/28 12:59:35 $ by: $Author: valdas $
  */
 public class TenderCasesViewer extends OpenCases {
 	
@@ -149,7 +149,8 @@ public class TenderCasesViewer extends OpenCases {
 			GenericButton subscribe = new GenericButton("subscribe", iwrb.getLocalizedString("tender_cases.subscribe_to_case", "Subscribe to case"));
 			buttons.add(subscribe);
 			subscribe.setOnClick(new StringBuilder("TendersHelper.subscribe('").append(iwrb.getLocalizedString("subscribing", "Subscribing...")).append("', '")
-					.append(casePK.toString()).append("', '").append(iwrb.getLocalizedString("loading", "Loading...")).append("', ").append(caseInfo.getProcessInstanceId()).append(");")
+					.append(casePK.toString()).append("', '").append(iwrb.getLocalizedString("loading", "Loading...")).append("', ")
+					.append(caseInfo.getProcessInstanceId()).append(");")
 			.toString());
 		}
 	}
@@ -188,7 +189,12 @@ public class TenderCasesViewer extends OpenCases {
 			link.setURL(tendersHelper.getLinkToSubscribedCase(iwc, currentUser, theCase.getId()));
 		} else {
 			link.addParameter(PARAMETER_CASE_PK, theCase.getId());
-			link.addParameter(UserCases.PARAMETER_ACTION, String.valueOf(ACTION_PROCESS));
+			if (currentUser == null) {
+				link.addParameter(UserCases.PARAMETER_ACTION, String.valueOf(ACTION_PROCESS));
+			}
+			else {
+				link.addParameter(TendersConstants.SPECIAL_TENDER_CASE_PAGE_REDIRECTOR_REQUESTED, Boolean.TRUE.toString());
+			}
 		}
 		
 		return link;

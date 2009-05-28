@@ -51,9 +51,9 @@ import com.idega.util.StringUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  *
- * Last modified: $Date: 2009/05/25 14:23:29 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/28 12:59:35 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -317,4 +317,22 @@ public class TendersHelperImp implements TendersHelper {
 		return uri + "?piId=" + processInstanceId;
 	}
 
+	public boolean doSubscribeToCase(IWContext iwc, User user, String caseId) {
+		if (user == null || StringUtil.isEmpty(caseId)) {
+			return false;
+		}
+		
+		try {
+			CaseBusiness caseBusiness = IBOLookup.getServiceInstance(iwc, CaseBusiness.class);
+			if (caseBusiness == null) {
+				return false;
+			}
+			
+			return caseBusiness.addSubscriber(caseId, user);
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error subscribing to case: " + caseId + ", for user: " + user, e);
+		}
+		
+		return false;
+	}
 }
