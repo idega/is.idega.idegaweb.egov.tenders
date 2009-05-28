@@ -1,6 +1,6 @@
 var TendersHelper = {};
 
-TendersHelper.subscribe = function(message, caseId, processInstanceId) {
+TendersHelper.subscribe = function(message, caseId, loadingMessage, processInstanceId) {
 	showLoadingMessage(message);
 	TendersSubscriber.subscribe(caseId, processInstanceId, {
 		callback: function(result) {
@@ -16,8 +16,9 @@ TendersHelper.subscribe = function(message, caseId, processInstanceId) {
 			}
 			
 			humanMsg.displayMsg(result.id, {
-				timeout: 3000,
+				timeout: 2000,
 				callback: function() {
+					showLoadingMessage(loadingMessage);
 					window.location.href = result.value;
 				}
 			});
