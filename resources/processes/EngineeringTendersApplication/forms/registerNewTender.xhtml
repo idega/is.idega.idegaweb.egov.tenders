@@ -16,6 +16,7 @@
                     <Tender_name_fbc_10 mapping="string_caseDescription"/>
                     <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
                     <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
+                    <Case_is_private_fbc_19 mapping="string_caseIsPrivate"/>
                     <The_last_day_for_questions_fbc_14 xsi:nil="true" mapping="date_lastDayForQuestions"/>
                     <When_the_tender_should_be_displayed_fbc_15 xsi:nil="true" mapping="date_whenTheTenderShouldBeDisplayed"/>
                     <Questions_answered_before_date_fbc_16 xsi:nil="true" mapping="date_lastDayToAnswerQuestions"/>
@@ -85,6 +86,8 @@
                 required="instance('control-instance')/required = 'true'" type="xs:string"/>
             <xf:bind id="fbc_12_bind"
                 nodeset="Description_of_job_fbc_12"
+                readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
+            <xf:bind id="fbc_19_bind" nodeset="Case_is_private_fbc_19"
                 readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_14_bind"
                 nodeset="The_last_day_for_questions_fbc_14"
@@ -168,6 +171,8 @@
                     <fbc_16-required lang="en">Last day to answers questions must be provided</fbc_16-required>
                     <fbc_17-required lang="is_IS">Required</fbc_17-required>
                     <fbc_17-required lang="en">Required</fbc_17-required>
+                    <fbc_19-label lang="en">Case is private</fbc_19-label>
+                    <fbc_19-label lang="is_IS">Case is private</fbc_19-label>
                 </localized_strings>
             </xf:instance>
             <xf:instance id="locale-instance" relevant="false()" src="context:fb-afk-loginSession.currentLocale"/>
@@ -180,6 +185,33 @@
                     model="submission_model"
                     ref="instance('control-instance')/required" value="'false'"/>
             </xf:action>
+             <xf:instance id="fbc_19_lds" xmlns="">
+                <local_src>
+                    <localizedEntries lang="en">
+                        <item>
+                            <itemLabel>Yes</itemLabel>
+                            <itemValue>true</itemValue>
+                        </item>
+                        <item>
+                            <itemLabel>No</itemLabel>
+                            <itemValue>false</itemValue>
+                        </item>
+                    </localizedEntries>
+                    <localizedEntries lang="is_IS">
+                        <item>
+                            <itemLabel>Já</itemLabel>
+                            <itemValue>true</itemValue>
+                        </item>
+                        <item>
+                            <itemLabel>Nei</itemLabel>
+                            <itemValue>false</itemValue>
+                        </item>
+                    </localizedEntries>
+                </local_src>
+            </xf:instance>
+            <xf:instance id="fbc_19_eds" xmlns="">
+                <ext_src/>
+            </xf:instance>
         </xf:model>
         <xs:schema id="fb-schema"/>
         <xf:model id="x-autofill-model">
@@ -230,6 +262,14 @@
                         <xf:textarea bind="fbc_12_bind" id="fbc_12" type="fbc_textarea">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_12-label[@lang=instance('localized_strings')/current_language]"/>
                         </xf:textarea>
+                        <xf:select1 appearance="full" bind="fbc_19_bind"
+                            id="fbc_19" type="fbc_single_select">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_19-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:itemset model="data_model" nodeset="instance('fbc_19_lds')/localizedEntries[@lang=instance('localized_strings')/current_language]/item">
+                                <xf:label ref="itemLabel"/>
+                                <xf:value ref="itemValue"/>
+                            </xf:itemset>
+                        </xf:select1>
                         <xf:input bind="fbc_15_bind" id="fbc_15" type="fbc_date">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_15-label[@lang=instance('localized_strings')/current_language]"/>
                             <xf:dispatch ev:event="idega-xforms-ready"
