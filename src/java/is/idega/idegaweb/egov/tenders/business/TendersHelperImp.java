@@ -35,9 +35,12 @@ import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.builder.business.BuilderLogicWrapper;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
+import com.idega.core.accesscontrol.business.AccessController;
+import com.idega.core.accesscontrol.business.LoginSession;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.idegaweb.IWApplicationContext;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
 import com.idega.jbpm.identity.BPMUser;
@@ -47,13 +50,14 @@ import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.expression.ELUtil;
 
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  *
- * Last modified: $Date: 2009/05/28 12:59:35 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/30 09:33:59 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -125,7 +129,7 @@ public class TendersHelperImp implements TendersHelper {
 	}
 	
 	@Transactional(readOnly=true)
-	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases) {
+	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser) {
 		if (ListUtil.isEmpty(cases)) {
 			return null;
 		}
@@ -178,7 +182,8 @@ public class TendersHelperImp implements TendersHelper {
 		try {
 			variables = getCasesDAO().getVariablesByProcessInstanceIdAndVariablesNames(processInstanceIds, Arrays.asList(
 					TendersConstants.TENDER_CASE_START_DATE_VARIABLE,
-					TendersConstants.TENDER_CASE_END_DATE_VARIABLE
+					TendersConstants.TENDER_CASE_END_DATE_VARIABLE,
+					TendersConstants.TENDER_CASE_IS_PRIVATE
 			));
 		} catch(Exception e) {
 			LOGGER.log(Level.SEVERE, "Error getting date variables for processes: " + processInstanceIds, e);
@@ -201,19 +206,79 @@ public class TendersHelperImp implements TendersHelper {
 						}
 					}
 				}
+			} else if (variable instanceof StringInstance || variable instanceof HibernateStringInstance) {
+				CasePresentationInfo caseInfo = info.get(variable.getProcessInstance().getId());
+				if (caseInfo != null) {
+					if (TendersConstants.TENDER_CASE_IS_PRIVATE.equals(variable.getName())) {
+						caseInfo.setCaseIsPrivate(Boolean.valueOf(variable.getValue().toString()));
+					}
+				}
 			}
 		}
 		
 		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
 		Collection<CasePresentation> validCases = new ArrayList<CasePresentation>();
 		for (CasePresentationInfo caseInfo: info.values()) {
-			if (caseInfo.getStartDate() != null && caseInfo.getEndDate() != null) {
-				if (currentTime.after(caseInfo.getStartDate()) && currentTime.before(caseInfo.getEndDate())) {
-					validCases.add(caseInfo.getCasePresentation());
+			if (isCaseVisible(caseInfo, currentUser)) {
+				if (caseInfo.getStartDate() != null && caseInfo.getEndDate() != null) {
+					if (currentTime.after(caseInfo.getStartDate()) && currentTime.before(caseInfo.getEndDate())) {
+						validCases.add(caseInfo.getCasePresentation());
+					}
 				}
 			}
 		}
 		return validCases;
+	}
+	
+	private boolean isCaseVisible(CasePresentationInfo caseInfo, User currentUser) {
+		if (!caseInfo.isCaseIsPrivate()) {
+			return true;
+		}
+		
+		caseInfo.getCasePresentation().setPrivate(true);
+		
+		if (currentUser == null) {
+			return false;
+		}
+		
+		AccessController accessController = IWMainApplication.getDefaultIWMainApplication().getAccessController();
+		if (canManageCaseSubscribers(currentUser)) {
+			return true;									//	Handler can see all cases
+		} else if (accessController.hasRole(currentUser, TendersConstants.TENDER_CASES_OWNER_ROLE)) {
+			return isUserOwner(caseInfo, currentUser);		//	Owner can see case
+		} else if (isUserInvited(caseInfo, currentUser)) {
+			return isUserInvited(caseInfo, currentUser);	//	User can see case if invited
+		}
+		
+		return false;
+	}
+	
+	public boolean canManageCaseSubscribers(User user) {
+		if (user == null) {
+			return false;
+		}
+		
+		try {
+			LoginSession loginSession = ELUtil.getInstance().getBean(LoginSession.class);
+			if (loginSession != null && loginSession.isSuperAdmin()) {
+				return true;
+			}
+		} catch(Exception e) {}
+		
+		return IWMainApplication.getDefaultIWMainApplication().getAccessController().hasRole(user, TendersConstants.TENDER_CASES_HANDLER_ROLE);
+	}
+	
+	private boolean isUserInvited(CasePresentationInfo caseInfo, User currentUser) {
+		return isSubscribed(IWMainApplication.getDefaultIWApplicationContext(), currentUser, caseInfo.getCasePresentation().getId());
+	}
+	
+	private boolean isUserOwner(CasePresentationInfo caseInfo, User currentUser) {
+		User owner = caseInfo.getCasePresentation().getOwner();
+		if (owner == null) {
+			return false;
+		}
+		
+		return owner.getId().equals(currentUser.getId());
 	}
 	
 	private CasePresentationInfo getCaseInfo(Collection<CasePresentation> cases, Integer caseId, Long processInstanceId) {
@@ -289,12 +354,11 @@ public class TendersHelperImp implements TendersHelper {
 			return false;
 		}
 		
-		CaseBusiness caseBusiness = null;
-		try {
-			caseBusiness = IBOLookup.getServiceInstance(iwac, CaseBusiness.class);
-		} catch (IBOLookupException e) {
-			LOGGER.log(Level.WARNING, "Error getting: " + CaseBusiness.class, e);
+		CaseBusiness caseBusiness = getCaseBusiness(iwac);
+		if (caseBusiness == null) {
+			return false;
 		}
+		
 		return caseBusiness.isSubscribed(caseId, user);
 	}
 	
@@ -323,7 +387,7 @@ public class TendersHelperImp implements TendersHelper {
 		}
 		
 		try {
-			CaseBusiness caseBusiness = IBOLookup.getServiceInstance(iwc, CaseBusiness.class);
+			CaseBusiness caseBusiness = getCaseBusiness(iwc);
 			if (caseBusiness == null) {
 				return false;
 			}
@@ -334,5 +398,14 @@ public class TendersHelperImp implements TendersHelper {
 		}
 		
 		return false;
+	}
+	
+	private CaseBusiness getCaseBusiness(IWApplicationContext iwac) {
+		try {
+			return IBOLookup.getServiceInstance(iwac == null ? IWMainApplication.getDefaultIWApplicationContext() : iwac, CaseBusiness.class);
+		} catch (IBOLookupException e) {
+			LOGGER.log(Level.WARNING, "Error getting: " + CaseBusiness.class, e);
+		}
+		return null;
 	}
 }

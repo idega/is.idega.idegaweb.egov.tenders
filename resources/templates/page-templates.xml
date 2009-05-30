@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page-templates>
+	<page name="Tender case viewer" type="tender_case_viewer"
+		iconfile="idegaweb/bundles/is.idega.idegaweb.egov.tenders.bundle/resources/images/pageIcons/tender_case_viewer.png"
+		templatefile="idegaweb/bundles/is.idega.idegaweb.egov.tenders.bundle/resources/pages/idega_theme_tender_case_viewer.xml">
+	</page>
+	<page name="Tender case manager" type="tender_case_manager"
+		iconfile="idegaweb/bundles/is.idega.idegaweb.egov.tenders.bundle/resources/images/pageIcons/tender_case_manager.png"
+		templatefile="idegaweb/bundles/is.idega.idegaweb.egov.tenders.bundle/resources/pages/idega_theme_tender_case_manager.xml">
+	</page>
+</page-templates>

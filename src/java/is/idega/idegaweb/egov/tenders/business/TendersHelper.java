@@ -15,15 +15,15 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  *
- * Last modified: $Date: 2009/05/28 12:59:35 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/30 09:33:59 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow);
 
-	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases);
+	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser);
 	
 	public CasePresentationInfo getTenderCaseInfo(Object caseId);
 
@@ -34,4 +34,6 @@ public interface TendersHelper {
 	public String getLinkToSubscribedCase(IWContext iwc, User user, Long processInstanceId);
 	
 	public boolean doSubscribeToCase(IWContext iwc, User user, String caseId);
+	
+	public boolean canManageCaseSubscribers(User user);
 }

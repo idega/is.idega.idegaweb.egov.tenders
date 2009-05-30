@@ -11,15 +11,16 @@ import com.idega.block.process.presentation.beans.CasePresentation;
  * Simple POJO to store info about BPM case
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  *
- * Last modified: $Date: 2009/05/25 14:28:57 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/05/30 09:33:59 $ by: $Author: valdas $
  */
 public class CasePresentationInfo {
 	private Long processInstanceId;
 	private CasePresentation casePresentation;
 	private Timestamp startDate;
 	private Timestamp endDate;
+	private boolean caseIsPrivate;
 	
 	private Map<String, String> info;
 	
@@ -95,4 +96,13 @@ public class CasePresentationInfo {
 	public boolean isEmpty() {
 		return info == null ? true : info.isEmpty();
 	}
+
+	public boolean isCaseIsPrivate() {
+		return caseIsPrivate;
+	}
+
+	public void setCaseIsPrivate(boolean caseIsPrivate) {
+		this.caseIsPrivate = caseIsPrivate;
+	}
+	
 }

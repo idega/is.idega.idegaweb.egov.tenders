@@ -25,6 +25,36 @@
             </value>
             <type>map</type>
           </key>
+          <key>
+            <name>is.idega.idegaweb.egov.tenders.presentation.CaseSubscribersManager</name>
+            <value>
+              <map>
+                <key>
+                  <name>component_property_file</name>
+                  <type>java.lang.String</type>
+                  <value>is.idega.idegaweb.egov.tenders.presentation.CaseSubscribersManager.pxml</value>
+                  <simple>false</simple>
+                  <reload>false</reload>
+                </key>
+              </map>
+            </value>
+            <type>map</type>
+          </key>
+          <key>
+            <name>is.idega.idegaweb.egov.tenders.presentation.TenderCaseViewer</name>
+            <value>
+              <map>
+                <key>
+                  <name>component_property_file</name>
+                  <type>java.lang.String</type>
+                  <value>is.idega.idegaweb.egov.tenders.presentation.TenderCaseViewer.pxml</value>
+                  <simple>false</simple>
+                  <reload>false</reload>
+                </key>
+              </map>
+            </value>
+            <type>map</type>
+          </key>
         </map>
       </value>
       <type>map</type>
