@@ -55,9 +55,9 @@ import com.idega.util.expression.ELUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  *
- * Last modified: $Date: 2009/05/30 09:33:59 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/01 11:06:29 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -400,7 +400,7 @@ public class TendersHelperImp implements TendersHelper {
 		return false;
 	}
 	
-	private CaseBusiness getCaseBusiness(IWApplicationContext iwac) {
+	public CaseBusiness getCaseBusiness(IWApplicationContext iwac) {
 		try {
 			return IBOLookup.getServiceInstance(iwac == null ? IWMainApplication.getDefaultIWApplicationContext() : iwac, CaseBusiness.class);
 		} catch (IBOLookupException e) {
