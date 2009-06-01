@@ -2,7 +2,16 @@ package is.idega.idegaweb.egov.tenders.presentation;
 
 import is.idega.idegaweb.egov.cases.presentation.CasesProcessor;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
+import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.idega.block.process.data.Case;
+import com.idega.block.process.presentation.UserCases;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.Block;
 import com.idega.presentation.IWContext;
@@ -10,15 +19,34 @@ import com.idega.presentation.Layer;
 import com.idega.presentation.text.Heading1;
 import com.idega.presentation.ui.BackButton;
 import com.idega.presentation.ui.Form;
+import com.idega.presentation.ui.Label;
+import com.idega.presentation.ui.SubmitButton;
+import com.idega.user.business.GroupHelper;
+import com.idega.user.data.User;
 import com.idega.user.presentation.user.UsersFilter;
+import com.idega.user.presentation.user.UsersFilterList;
+import com.idega.util.ArrayUtil;
+import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.expression.ELUtil;
 
 public class CaseSubscribersManager extends Block {
 
+	@Autowired
+	private TendersHelper tendersHelper;
+	@Autowired
+	private GroupHelper groupHelper;
+	
+	private Case theCase;
+	
 	private String caseId;
+	
+	private String saveActionMessage;
 	
 	@Override
 	public void main(IWContext iwc) throws Exception {
+		ELUtil.getInstance().autowire(this);
+		
 		if (StringUtil.isEmpty(caseId)) {
 			caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
 		}
@@ -28,18 +56,130 @@ public class CaseSubscribersManager extends Block {
 			return;
 		}
 		
+		switch (parseAction(iwc)) {
+			case CasesProcessor.ACTION_VIEW:
+				showCaseForm(iwc);
+				break;
+	
+			case CasesProcessor.ACTION_SAVE:
+				saveSubscribers(iwc);
+				showCaseForm(iwc);
+				break;
+				
+			default:
+				showCaseForm(iwc);
+				break;
+		}
+	}
+	
+	private void saveSubscribers(IWContext iwc) {
+		String[] usersIDs = iwc.getParameterValues(UsersFilterList.USERS_FILTER_SELECTED_USERS);
+		if (ArrayUtil.isEmpty(usersIDs)) {
+			removeAllSubscribers(iwc);
+		} else {
+			setSubscribers(iwc, usersIDs);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private boolean setSubscribers(IWContext iwc, String[] usersIDs) {
+		IWResourceBundle iwrb = getResourceBundle(iwc);
+
+		if (!removeAllSubscribers(iwc)) {
+			saveActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_subscribers", "Unable to save: unable to set subscribers");
+			return false;
+		}
+		
+		Collection<User> newSubscribers = null;
+		try {
+			newSubscribers = groupHelper.getUserBusiness(iwc).getUsers(usersIDs);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		if (ListUtil.isEmpty(newSubscribers)) {
+			saveActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_subscribers", "Unable to save: unable to set subscribers");
+			return false;
+		}
+		
+		try {
+			Case theCase = getCase(iwc);
+			for (User newSubscriber: newSubscribers) {
+				theCase.addSubscriber(newSubscriber);
+			}
+			theCase.store();
+		} catch(Exception e) {
+			e.printStackTrace();
+			saveActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_subscribers", "Unable to save: unable to set subscribers");
+			return false;
+		}
+		
+		saveActionMessage = iwrb.getLocalizedString("tender_case_manager.subscribers_set_successfully", "Subscribers were set successfully");
+		return true;
+	}
+	
+	private boolean removeAllSubscribers(IWContext iwc) {
+		IWResourceBundle iwrb = getResourceBundle(iwc);
+		
+		Case theCase = getCase(iwc);
+		if (theCase == null) {
+			saveActionMessage = iwrb.getLocalizedString("tender_case_manager.case_not_found", "Unable to save, case was not found");
+			return false;
+		}
+		
+		Collection<User> subscribers = theCase.getSubscribers();
+		if (!ListUtil.isEmpty(subscribers)) {
+			try {
+				for (User subscriber: subscribers) {
+					theCase.removeSubscriber(subscriber);
+				}
+				theCase.store();
+			} catch(Exception e) {
+				e.printStackTrace();
+				saveActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_remove_subscribers", "Unable to save: unable to remove subscribers");
+				return false;
+			}
+		}
+		
+		saveActionMessage = iwrb.getLocalizedString("tender_case_manager.subscribers_removed_successfully", "All subscribers were removed successfully");
+		return true;
+	}
+	
+	private Case getCase(IWContext iwc) {
+		if (theCase == null) {
+			try {
+				theCase = tendersHelper.getCaseBusiness(iwc).getCase(caseId);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return theCase;
+	}
+	
+	private void showCaseForm(IWContext iwc) {
+		IWResourceBundle iwrb = getResourceBundle(iwc);
+		
 		Form form = new Form();
 		form.addParameter(CasesProcessor.PARAMETER_CASE_PK, caseId);
 		add(form);
+		
+		if (saveActionMessage != null) {
+			form.add(new Heading1(saveActionMessage));
+		}
 		
 		TenderCaseViewer caseViewer = new TenderCaseViewer();
 		caseViewer.setActAsStandalone(false);
 		caseViewer.setCaseId(caseId);
 		form.add(caseViewer);
 		
-		//	TODO: finish up!
+		Layer usersFilterContainer = new Layer();
+		form.add(usersFilterContainer);
+		usersFilterContainer.setStyleClass("formItem");
 		UsersFilter usersFilter = new UsersFilter();
-		form.add(usersFilter);
+		usersFilter.setAddLabel(false);
+		usersFilter.setSelectedUsers(getSubscribersIds(iwc));
+		Label usersFilterLabel = new Label(iwrb.getLocalizedString("tender_case_manager.subscribe_users_to_case", "Set subscribed users"), usersFilter);
+		usersFilterContainer.add(usersFilterLabel);
+		usersFilterContainer.add(usersFilter);
 		
 		Layer buttons = new Layer();
 		form.add(buttons);
@@ -47,6 +187,35 @@ public class CaseSubscribersManager extends Block {
 		
 		BackButton back = new BackButton(iwrb.getLocalizedString("tender_cases.back", "Back"));
 		buttons.add(back);
+		
+		SubmitButton save = new SubmitButton(iwrb.getLocalizedString("tender_cases.save_subscriders", "Save"), UserCases.PARAMETER_ACTION,
+				String.valueOf(CasesProcessor.ACTION_SAVE));
+		buttons.add(save);
+	}
+	
+	private List<String> getSubscribersIds(IWContext iwc) {
+		Case theCase = getCase(iwc);
+		if (theCase == null) {
+			return null;
+		}
+		
+		Collection<User> subscribers = theCase.getSubscribers();
+		if (ListUtil.isEmpty(subscribers)) {
+			return null;
+		}
+		
+		List<String> ids = new ArrayList<String>(subscribers.size());
+		for (User subscriber: subscribers) {
+			ids.add(subscriber.getId());
+		}
+		return ids;
+	}
+	
+	private int parseAction(IWContext iwc) {
+		if (iwc.isParameterSet(UserCases.PARAMETER_ACTION)) {
+			return Integer.parseInt(iwc.getParameter(UserCases.PARAMETER_ACTION));
+		}
+		return CasesProcessor.ACTION_VIEW;
 	}
 
 	public String getCaseId() {
