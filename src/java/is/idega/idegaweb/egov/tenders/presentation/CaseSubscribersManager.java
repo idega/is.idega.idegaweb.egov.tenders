@@ -65,6 +65,10 @@ public class CaseSubscribersManager extends Block {
 				break;
 				
 			case CasesProcessor.ACTION_SAVE:
+				if (!resolveCaseId(iwc)) {
+					add(new Heading1(getResourceBundle(iwc).getLocalizedString("tender_case_manager.case_not_found", "Sorry, case was not found")));
+					return;
+				}
 				saveSubscribers(iwc);
 				showCaseForm(iwc);
 				break;
@@ -175,7 +179,12 @@ public class CaseSubscribersManager extends Block {
 			return menu;
 		}
 		
-		for (CasePresentation theCase: cases.getCollection()) {
+		Collection<CasePresentation> validCases = tendersHelper.getValidTendersCases(cases.getCollection(), iwc.isLoggedOn() ?iwc.getCurrentUser() : null);
+		if (ListUtil.isEmpty(validCases)) {
+			return menu;
+		}
+		
+		for (CasePresentation theCase: validCases) {
 			menu.addOption(new SelectOption(theCase.getSubject(), theCase.getId()));
 		}
 		if (iwc.isParameterSet(CasesProcessor.PARAMETER_CASE_PK)) {
@@ -204,7 +213,7 @@ public class CaseSubscribersManager extends Block {
 		DropdownMenu casesMenu = getCasesToManage(iwc);
 		
 		if (StringUtil.isEmpty(caseId)) {
-			form.add(new Heading1(iwrb.getLocalizedString("tender_case_manager.there_are_no_cases_available", "There are no cases to manage")));
+			form.add(new Heading1(iwrb.getLocalizedString("tender_case_manager.there_are_no_valid_cases_available", "There are no valid cases to manage")));
 			return;
 		}
 		
