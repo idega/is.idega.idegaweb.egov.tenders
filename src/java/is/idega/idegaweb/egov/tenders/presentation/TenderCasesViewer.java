@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.idega.block.process.presentation.UserCases;
 import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.presentation.IWContext;
@@ -28,9 +29,9 @@ import com.idega.util.expression.ELUtil;
  * Viewer filters tenders cases
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  *
- * Last modified: $Date: 2009/05/30 09:33:59 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/05 12:56:41 $ by: $Author: valdas $
  */
 public class TenderCasesViewer extends OpenCases {
 	
@@ -83,25 +84,22 @@ public class TenderCasesViewer extends OpenCases {
 	private Link getLinkToCase(IWContext iwc, CasePresentation theCase, User currentUser) {
 		Link link = new Link(theCase.getSubject());
 		
-		if (theCase.isPrivate() && tendersHelper.canManageCaseSubscribers(currentUser)) {
-			//	Show tender case manager: form to add/remove subscribers
-			link.setURL(getUri(iwc, TendersConstants.PAGE_TYPE_CASE_MANAGER, theCase.getId()));
-		} else if (tendersHelper.isSubscribed(iwc, currentUser, theCase.getId())) {
+		if (tendersHelper.isSubscribed(iwc, currentUser, theCase.getId())) {
 			//	Link to subscribed case
 			link.setURL(tendersHelper.getLinkToSubscribedCase(iwc, currentUser, theCase.getId()));
-		} else if (currentUser == null) {
-			//	Link to tender case viewer
-			link.setURL(getUri(iwc, TendersConstants.PAGE_TYPE_CASE_VIEWER, theCase.getId()));
 		} else {
-			//	Link to redirector (subscribes to case and forwards to BPM case viewer)
-			link.addParameter(TendersConstants.SPECIAL_TENDER_CASE_PAGE_REDIRECTOR_REQUESTED, Boolean.TRUE.toString());
-			link.addParameter(PARAMETER_CASE_PK, theCase.getId());
+			//	Link to tender case viewer AND possibility to subscribe to case
+			link.setURL(getUri(iwc, TendersConstants.PAGE_TYPE_CASE_VIEWER, theCase.getId()));
 		}
 		
 		return link;
 	}
-
+	
 	private String getUri(IWContext iwc, String pageType, String caseId) {
+		return getUri(iwc, pageType, caseId, null);
+	}
+
+	private String getUri(IWContext iwc, String pageType, String caseId, Integer viewType) {
 		String url = null;
 		try {
 			url = BuilderLogic.getInstance().getFullPageUrlByPageType(iwc, pageType, true);
@@ -113,6 +111,9 @@ public class TenderCasesViewer extends OpenCases {
 		
 		URIUtil uriUtil = new URIUtil(url);
 		uriUtil.setParameter(PARAMETER_CASE_PK, caseId);
+		if (viewType != null) {
+			uriUtil.setParameter(UserCases.PARAMETER_ACTION, String.valueOf(viewType));
+		}
 		
 		return uriUtil.getUri();
 	}

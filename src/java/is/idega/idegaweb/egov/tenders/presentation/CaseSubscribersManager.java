@@ -12,14 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.block.process.data.Case;
 import com.idega.block.process.presentation.UserCases;
+import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.Block;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
+import com.idega.presentation.paging.PagedDataCollection;
 import com.idega.presentation.text.Heading1;
 import com.idega.presentation.ui.BackButton;
+import com.idega.presentation.ui.DropdownMenu;
 import com.idega.presentation.ui.Form;
 import com.idega.presentation.ui.Label;
+import com.idega.presentation.ui.SelectOption;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.user.business.GroupHelper;
 import com.idega.user.data.User;
@@ -47,20 +51,19 @@ public class CaseSubscribersManager extends Block {
 	public void main(IWContext iwc) throws Exception {
 		ELUtil.getInstance().autowire(this);
 		
-		if (StringUtil.isEmpty(caseId)) {
-			caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
-		}
-		IWResourceBundle iwrb = getResourceBundle(iwc);
-		if (StringUtil.isEmpty(caseId)) {
-			add(new Heading1(iwrb.getLocalizedString("tender_case_manager.case_not_found", "Sorry, case was not found")));
-			return;
-		}
-		
 		switch (parseAction(iwc)) {
 			case CasesProcessor.ACTION_VIEW:
 				showCaseForm(iwc);
 				break;
 	
+			case CasesProcessor.ACTION_PROCESS:
+				if (!resolveCaseId(iwc)) {
+					add(new Heading1(getResourceBundle(iwc).getLocalizedString("tender_case_manager.case_not_found", "Sorry, case was not found")));
+					return;
+				}
+				showCaseForm(iwc);
+				break;
+				
 			case CasesProcessor.ACTION_SAVE:
 				saveSubscribers(iwc);
 				showCaseForm(iwc);
@@ -70,6 +73,15 @@ public class CaseSubscribersManager extends Block {
 				showCaseForm(iwc);
 				break;
 		}
+	}
+	
+	private boolean resolveCaseId(IWContext iwc) {
+		if (!StringUtil.isEmpty(caseId)) {
+			return true;
+		}
+		
+		caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
+		return StringUtil.isEmpty(caseId) ? false : true;
 	}
 	
 	private void saveSubscribers(IWContext iwc) {
@@ -155,16 +167,55 @@ public class CaseSubscribersManager extends Block {
 		return theCase;
 	}
 	
+	private DropdownMenu getCasesToManage(IWContext iwc) {
+		DropdownMenu menu = new DropdownMenu();
+		
+		PagedDataCollection<CasePresentation> cases = tendersHelper.getAllCases(iwc.getCurrentLocale(), null, null);
+		if (cases == null || ListUtil.isEmpty(cases.getCollection())) {
+			return menu;
+		}
+		
+		for (CasePresentation theCase: cases.getCollection()) {
+			menu.addOption(new SelectOption(theCase.getSubject(), theCase.getId()));
+		}
+		if (iwc.isParameterSet(CasesProcessor.PARAMETER_CASE_PK)) {
+			caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
+		} else {
+			caseId = cases.getCollection().iterator().next().getId();
+		}
+		
+		menu.setSelectedElement(caseId);
+		menu.setOnChange(new StringBuilder("changeValue(this.form['").append(CasesProcessor.PARAMETER_CASE_PK).append("'], dwr.util.getValue('")
+				.append(menu.getId()).append("'));this.form.submit();").toString());
+		
+		return menu;
+	}
+	
 	private void showCaseForm(IWContext iwc) {
 		IWResourceBundle iwrb = getResourceBundle(iwc);
 		
 		Form form = new Form();
-		form.addParameter(CasesProcessor.PARAMETER_CASE_PK, caseId);
 		add(form);
 		
 		if (saveActionMessage != null) {
 			form.add(new Heading1(saveActionMessage));
 		}
+		
+		DropdownMenu casesMenu = getCasesToManage(iwc);
+		
+		if (StringUtil.isEmpty(caseId)) {
+			form.add(new Heading1(iwrb.getLocalizedString("tender_case_manager.there_are_no_cases_available", "There are no cases to manage")));
+			return;
+		}
+		
+		form.addParameter(CasesProcessor.PARAMETER_CASE_PK, caseId);
+		
+		Layer casesDropdownContainer = new Layer();
+		form.add(casesDropdownContainer);
+		casesDropdownContainer.setStyleClass("formItem");
+		Label casesChooserLabel = new Label(iwrb.getLocalizedString("tender_case_manager.select_case", "Select case"), casesMenu);
+		casesDropdownContainer.add(casesChooserLabel);
+		casesDropdownContainer.add(casesMenu);
 		
 		TenderCaseViewer caseViewer = new TenderCaseViewer();
 		caseViewer.setActAsStandalone(false);
