@@ -1,10 +1,8 @@
 package is.idega.idegaweb.egov.tenders.presentation;
 
-import is.idega.idegaweb.egov.application.IWBundleStarter;
 import is.idega.idegaweb.egov.cases.presentation.CasesProcessor;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
-import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 import is.idega.idegaweb.egov.tenders.business.TendersSubscriber;
 
 import java.rmi.RemoteException;
@@ -12,12 +10,7 @@ import java.util.Arrays;
 
 import javax.faces.component.UIComponent;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.idega.block.web2.business.JQuery;
-import com.idega.block.web2.business.Web2Business;
 import com.idega.idegaweb.IWResourceBundle;
-import com.idega.presentation.Block;
 import com.idega.presentation.CSSSpacer;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
@@ -31,31 +24,15 @@ import com.idega.presentation.ui.TextArea;
 import com.idega.presentation.ui.TextInput;
 import com.idega.util.CoreConstants;
 import com.idega.util.PresentationUtil;
-import com.idega.util.expression.ELUtil;
 
-public class TenderCaseViewer extends Block {
-
-	@Autowired
-	private TendersHelper tendersHelper;
-	
-	@Autowired
-	private JQuery jQuery;
-	
-	@Autowired
-	private Web2Business web2;
-
-	private String caseId;
+public class TenderCaseViewer extends BasicTenderViewer {
 	
 	private boolean actAsStandalone = true;
 	
 	@Override
 	public void main(IWContext iwc) throws Exception {
-		PresentationUtil.addStyleSheetsToHeader(iwc, Arrays.asList(
-				iwc.getIWMainApplication().getBundle(IWBundleStarter.IW_BUNDLE_IDENTIFIER).getVirtualPathWithFileNameString("style/application.css"),
-				getBundle(iwc).getVirtualPathWithFileNameString("style/tenders.css")
-		));
+		super.main(iwc);
 		
-		ELUtil.getInstance().autowire(this);
 		showProcessor(iwc, iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK));
 	}
 	
@@ -70,9 +47,12 @@ public class TenderCaseViewer extends Block {
 		IWResourceBundle iwrb = getResourceBundle(iwc);
 		
 		if (casePK == null) {
-			casePK = caseId;
+			casePK = getCaseId();
+		} else {
+			setCaseId(casePK.toString());
 		}
-		CasePresentationInfo caseInfo = tendersHelper.getTenderCaseInfo(casePK);
+		
+		CasePresentationInfo caseInfo = getCaseInfo();
 		if (caseInfo == null || caseInfo.isEmpty()) {
 			formContainer.add(new Heading1(iwrb.getLocalizedString("tender_cases.sorry_case_not_found", "Selected case was not found.")));
 			return;
@@ -103,10 +83,10 @@ public class TenderCaseViewer extends Block {
 						CoreConstants.DWR_ENGINE_SCRIPT,
 						"/dwr/interface/"+ TendersSubscriber.DWR_OBJECT +".js",
 						getBundle(iwc).getVirtualPathWithFileNameString("javascript/TendersHelper.js"),
-						jQuery.getBundleURIToJQueryLib(),
-						web2.getBundleUriToHumanizedMessagesScript()
+						getJQuery().getBundleURIToJQueryLib(),
+						getWeb2().getBundleUriToHumanizedMessagesScript()
 				));
-				PresentationUtil.addStyleSheetToHeader(iwc, web2.getBundleUriToHumanizedMessagesStyleSheet());
+				PresentationUtil.addStyleSheetToHeader(iwc, getWeb2().getBundleUriToHumanizedMessagesStyleSheet());
 				
 				GenericButton subscribe = new GenericButton("subscribe", iwrb.getLocalizedString("tender_cases.subscribe_to_case", "Subscribe to case"));
 				buttons.add(subscribe);
@@ -143,19 +123,6 @@ public class TenderCaseViewer extends Block {
 		container.add(new CSSSpacer());
 		
 		return container;
-	}
-
-	public String getCaseId() {
-		return caseId;
-	}
-
-	public void setCaseId(String caseId) {
-		this.caseId = caseId;
-	}
-	
-	@Override
-	public String getBundleIdentifier() {
-		return TendersConstants.IW_BUNDLE_IDENTIFIER;
 	}
 
 	public boolean isActAsStandalone() {

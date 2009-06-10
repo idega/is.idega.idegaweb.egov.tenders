@@ -8,6 +8,7 @@ import java.util.Locale;
 import com.idega.block.process.business.CaseBusiness;
 import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.idegaweb.IWApplicationContext;
+import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.paging.PagedDataCollection;
 import com.idega.user.data.User;
@@ -16,9 +17,9 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  *
- * Last modified: $Date: 2009/06/01 11:06:29 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/10 07:05:00 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
@@ -39,4 +40,8 @@ public interface TendersHelper {
 	public boolean canManageCaseSubscribers(User user);
 	
 	public CaseBusiness getCaseBusiness(IWApplicationContext iwac);
+	
+	public boolean disableToSeeAllAttachments(TaskInstanceW taskInstance);
+	
+	public boolean enableToSeeAllAttachments(TaskInstanceW taskInstance);
 }

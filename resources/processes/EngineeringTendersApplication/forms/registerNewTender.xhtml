@@ -17,9 +17,8 @@
                     <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
                     <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
                     <Case_is_private_fbc_19 mapping="string_caseIsPrivate"/>
-                    <The_last_day_for_questions_fbc_14 xsi:nil="true" mapping="date_lastDayForQuestions"/>
+                    <Payment_case_fbc_401 mapping="string_paymentCase"/>
                     <When_the_tender_should_be_displayed_fbc_15 xsi:nil="true" mapping="date_whenTheTenderShouldBeDisplayed"/>
-                    <Questions_answered_before_date_fbc_16 xsi:nil="true" mapping="date_lastDayToAnswerQuestions"/>
                     <The_last_day_to_send_in_bids_fbc_17 xsi:nil="true" mapping="date_lastDayToSendBids"/>
                     <Attachments_fbc_18 mapping="files_tenderApplicationFiles">
                         <group/>
@@ -89,14 +88,10 @@
                 readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_19_bind" nodeset="Case_is_private_fbc_19"
                 readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
-            <xf:bind id="fbc_14_bind"
-                nodeset="The_last_day_for_questions_fbc_14"
-                required="instance('control-instance')/required = 'true'" type="date"/>
+            <xf:bind id="fbc_401_bind" nodeset="Payment_case_fbc_401"
+                readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_15_bind"
                 nodeset="When_the_tender_should_be_displayed_fbc_15"
-                required="instance('control-instance')/required = 'true'" type="date"/>
-            <xf:bind id="fbc_16_bind"
-                nodeset="Questions_answered_before_date_fbc_16"
                 required="instance('control-instance')/required = 'true'" type="date"/>
             <xf:bind id="fbc_17_bind"
                 nodeset="The_last_day_to_send_in_bids_fbc_17"
@@ -137,12 +132,8 @@
                     <fbc_11-label lang="en">Who is issuing the tender</fbc_11-label>
                     <fbc_12-label lang="is_IS">Lýsing á verki</fbc_12-label>
                     <fbc_12-label lang="en">Description of job</fbc_12-label>
-                    <fbc_14-label lang="is_IS">Fyrirspurnarfrestur</fbc_14-label>
-                    <fbc_14-label lang="en">The last day for questions</fbc_14-label>
                     <fbc_15-label lang="is_IS">Birting útboðs</fbc_15-label>
                     <fbc_15-label lang="en">When the tender should be displayed</fbc_15-label>
-                    <fbc_16-label lang="is_IS">Svarfrestur fyrirspurna</fbc_16-label>
-                    <fbc_16-label lang="en">Questions answered before date</fbc_16-label>
                     <fbc_17-label lang="is_IS">Skil á tilboðum</fbc_17-label>
                     <fbc_17-label lang="en">The last day to send in bids</fbc_17-label>
                     <fbc_18-paragraph-text lang="is_IS">Mögulegt er að senda viðbótarupplýsingar í viðhengi</fbc_18-paragraph-text>
@@ -165,14 +156,12 @@
                     <fbc_11-required lang="en">Required</fbc_11-required>
                     <fbc_15-required lang="is_IS">Required</fbc_15-required>
                     <fbc_15-required lang="en">Required</fbc_15-required>
-                    <fbc_14-required lang="is_IS">Required</fbc_14-required>
-                    <fbc_14-required lang="en">Required</fbc_14-required>
-                    <fbc_16-required lang="is_IS">Required</fbc_16-required>
-                    <fbc_16-required lang="en">Last day to answers questions must be provided</fbc_16-required>
                     <fbc_17-required lang="is_IS">Required</fbc_17-required>
                     <fbc_17-required lang="en">Required</fbc_17-required>
                     <fbc_19-label lang="en">Case is private</fbc_19-label>
                     <fbc_19-label lang="is_IS">Case is private</fbc_19-label>
+                    <fbc_401-label lang="is_IS">Payment case</fbc_401-label>
+                    <fbc_401-label lang="en">Payment case</fbc_401-label>
                 </localized_strings>
             </xf:instance>
             <xf:instance id="locale-instance" relevant="false()" src="context:fb-afk-loginSession.currentLocale"/>
@@ -210,6 +199,33 @@
                 </local_src>
             </xf:instance>
             <xf:instance id="fbc_19_eds" xmlns="">
+                <ext_src/>
+            </xf:instance>
+            <xf:instance id="fbc_401_lds" xmlns="">
+                <local_src>
+                    <localizedEntries lang="en">
+                        <item>
+                            <itemLabel>Yes</itemLabel>
+                            <itemValue>true</itemValue>
+                        </item>
+                        <item>
+                            <itemLabel>No</itemLabel>
+                            <itemValue>false</itemValue>
+                        </item>
+                    </localizedEntries>
+                    <localizedEntries lang="is_IS">
+                        <item>
+                            <itemLabel>Já</itemLabel>
+                            <itemValue>true</itemValue>
+                        </item>
+                        <item>
+                            <itemLabel>Nei</itemLabel>
+                            <itemValue>false</itemValue>
+                        </item>
+                    </localizedEntries>
+                </local_src>
+            </xf:instance>
+            <xf:instance id="fbc_401_eds" xmlns="">
                 <ext_src/>
             </xf:instance>
         </xf:model>
@@ -270,6 +286,14 @@
                                 <xf:value ref="itemValue"/>
                             </xf:itemset>
                         </xf:select1>
+                        <xf:select1 appearance="full"
+                            bind="fbc_401_bind" id="fbc_401" type="fbc_single_select">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_401-label[@lang=instance('localized_strings')/current_language]"/>
+                            <xf:itemset model="data_model" nodeset="instance('fbc_401_lds')/localizedEntries[@lang=instance('localized_strings')/current_language]/item">
+                                <xf:label ref="itemLabel"/>
+                                <xf:value ref="itemValue"/>
+                            </xf:itemset>
+                        </xf:select1>
                         <xf:input bind="fbc_15_bind" id="fbc_15" type="fbc_date">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_15-label[@lang=instance('localized_strings')/current_language]"/>
                             <xf:dispatch ev:event="idega-xforms-ready"
@@ -281,30 +305,6 @@
                                     model="data_model" value="instance('localized_strings')/fbc_15-required[@lang=instance('localized_strings')/current_language]"/>
                             </idega:validator>
                             <xf:alert ref="instance('error-instance')/error[@for='fbc_15']"/>
-                        </xf:input>
-                        <xf:input bind="fbc_14_bind" id="fbc_14" type="fbc_date">
-                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_14-label[@lang=instance('localized_strings')/current_language]"/>
-                            <xf:dispatch ev:event="idega-xforms-ready"
-                                name="idega-validate" target="fbc_14"/>
-                            <xf:dispatch ev:event="xforms-value-changed"
-                                name="idega-validate" target="fbc_14"/>
-                            <idega:validator ev:event="idega-validate">
-                                <idega:message errorType="required"
-                                    model="data_model" value="instance('localized_strings')/fbc_14-required[@lang=instance('localized_strings')/current_language]"/>
-                            </idega:validator>
-                            <xf:alert ref="instance('error-instance')/error[@for='fbc_14']"/>
-                        </xf:input>
-                        <xf:input bind="fbc_16_bind" id="fbc_16" type="fbc_date">
-                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_16-label[@lang=instance('localized_strings')/current_language]"/>
-                            <xf:dispatch ev:event="idega-xforms-ready"
-                                name="idega-validate" target="fbc_16"/>
-                            <xf:dispatch ev:event="xforms-value-changed"
-                                name="idega-validate" target="fbc_16"/>
-                            <idega:validator ev:event="idega-validate">
-                                <idega:message errorType="required"
-                                    model="data_model" value="instance('localized_strings')/fbc_16-required[@lang=instance('localized_strings')/current_language]"/>
-                            </idega:validator>
-                            <xf:alert ref="instance('error-instance')/error[@for='fbc_16']"/>
                         </xf:input>
                         <xf:input bind="fbc_17_bind" id="fbc_17" type="fbc_date">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_17-label[@lang=instance('localized_strings')/current_language]"/>

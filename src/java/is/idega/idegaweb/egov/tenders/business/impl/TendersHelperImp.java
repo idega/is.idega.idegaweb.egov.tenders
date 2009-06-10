@@ -1,7 +1,8 @@
-package is.idega.idegaweb.egov.tenders.business;
+package is.idega.idegaweb.egov.tenders.business.impl;
 
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
+import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -43,7 +44,12 @@ import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
+import com.idega.jbpm.exe.BPMFactory;
+import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.jbpm.identity.BPMUser;
+import com.idega.jbpm.identity.Role;
+import com.idega.jbpm.identity.permission.Access;
+import com.idega.jbpm.variables.BinaryVariable;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.paging.PagedDataCollection;
 import com.idega.user.data.User;
@@ -55,9 +61,9 @@ import com.idega.util.expression.ELUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.1 $
  *
- * Last modified: $Date: 2009/06/01 11:06:29 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/10 07:05:00 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -73,6 +79,9 @@ public class TendersHelperImp implements TendersHelper {
 	
 	@Autowired
 	private BuilderLogicWrapper builderLorgicWrapper;
+	
+	@Autowired
+	private BPMFactory bpmFactory;
 	
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow) {
 		CaseHome caseHome = null;
@@ -183,7 +192,8 @@ public class TendersHelperImp implements TendersHelper {
 			variables = getCasesDAO().getVariablesByProcessInstanceIdAndVariablesNames(processInstanceIds, Arrays.asList(
 					TendersConstants.TENDER_CASE_START_DATE_VARIABLE,
 					TendersConstants.TENDER_CASE_END_DATE_VARIABLE,
-					TendersConstants.TENDER_CASE_IS_PRIVATE
+					TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE,
+					TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE
 			));
 		} catch(Exception e) {
 			LOGGER.log(Level.SEVERE, "Error getting date variables for processes: " + processInstanceIds, e);
@@ -209,8 +219,10 @@ public class TendersHelperImp implements TendersHelper {
 			} else if (variable instanceof StringInstance || variable instanceof HibernateStringInstance) {
 				CasePresentationInfo caseInfo = info.get(variable.getProcessInstance().getId());
 				if (caseInfo != null) {
-					if (TendersConstants.TENDER_CASE_IS_PRIVATE.equals(variable.getName())) {
+					if (TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE.equals(variable.getName())) {
 						caseInfo.setCaseIsPrivate(Boolean.valueOf(variable.getValue().toString()));
+					} else if (TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE.equals(variable.getName())) {
+						caseInfo.setPaymentCase(Boolean.valueOf(variable.getValue().toString()));
 					}
 				}
 			}
@@ -331,7 +343,9 @@ public class TendersHelperImp implements TendersHelper {
 			variables = getCasesDAO().getVariablesByProcessInstanceIdAndVariablesNames(Arrays.asList(info.getProcessInstanceId()), Arrays.asList(
 					TendersConstants.TENDER_CASE_TENDER_NAME_VARIABLE,
 					TendersConstants.TENDER_CASE_TENDER_ISSUER_VARIABLE,
-					TendersConstants.TENDER_CASE_JOB_DESCRIPTION_VARIABLE
+					TendersConstants.TENDER_CASE_JOB_DESCRIPTION_VARIABLE,
+					TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE,
+					TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE
 			));
 		} catch(Exception e) {
 			LOGGER.log(Level.WARNING, "Error getting info about tender case: " + caseId, e);
@@ -343,6 +357,12 @@ public class TendersHelperImp implements TendersHelper {
 		for (VariableInstance variable: variables) {
 			if (variable instanceof StringInstance || variable instanceof HibernateStringInstance) {
 				info.addInfo(variable.getName(), variable.getValue().toString());
+				
+				if (TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE.equals(variable.getName())) {
+					info.setCaseIsPrivate(Boolean.valueOf(variable.getValue().toString()));
+				} else if (TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE.equals(variable.getName())) {
+					info.setPaymentCase(Boolean.valueOf(variable.getValue().toString()));
+				}
 			}
 		}
 		
@@ -408,4 +428,56 @@ public class TendersHelperImp implements TendersHelper {
 		}
 		return null;
 	}
+
+	public BPMFactory getBpmFactory() {
+		return bpmFactory;
+	}
+
+	public void setBpmFactory(BPMFactory bpmFactory) {
+		this.bpmFactory = bpmFactory;
+	}
+
+	public boolean disableToSeeAllAttachments(TaskInstanceW taskInstance) {
+		for (String roleName: TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES) {
+			if (!setAccessRight(taskInstance, roleName, null)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	public boolean enableToSeeAllAttachments(TaskInstanceW taskInstance) {
+		for (String roleName: TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES) {
+			if (!setAccessRight(taskInstance, roleName, Access.read)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	@Transactional(readOnly = true)
+	private boolean setAccessRight(TaskInstanceW taskInstance, String roleName, Access access) {
+		if (taskInstance == null) {
+			return false;
+		}
+		
+		List<BinaryVariable> attachments = taskInstance.getAttachments();
+		if (ListUtil.isEmpty(attachments)) {
+			return true;
+		}
+		
+		try {
+			for (BinaryVariable attachment: attachments) {
+				taskInstance.setTaskRolePermissions(new Role(roleName, access), false, attachment.getIdentifier());
+			}
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error setting access rights for task: " + taskInstance.getTaskInstanceId(), e);
+			return false;
+		}
+		
+		return true;
+	}
+	
 }
