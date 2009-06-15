@@ -2,6 +2,7 @@ package is.idega.idegaweb.egov.tenders.business.impl;
 
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
+import is.idega.idegaweb.egov.tenders.business.TendersCommentsPersistenceManager;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 
 import java.sql.Timestamp;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.idega.block.process.business.CaseBusiness;
 import com.idega.block.process.business.CaseManagersProvider;
+import com.idega.block.process.business.CasesRetrievalManager;
 import com.idega.block.process.data.Case;
 import com.idega.block.process.data.CaseCode;
 import com.idega.block.process.data.CaseCodeHome;
@@ -44,6 +46,7 @@ import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
+import com.idega.jbpm.data.ProcessManagerBind;
 import com.idega.jbpm.exe.BPMFactory;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.jbpm.identity.BPMUser;
@@ -56,14 +59,15 @@ import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.URIUtil;
 import com.idega.util.expression.ELUtil;
 
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  *
- * Last modified: $Date: 2009/06/10 07:05:00 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/15 10:02:29 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -398,7 +402,15 @@ public class TendersHelperImp implements TendersHelper {
 
 	public String getLinkToSubscribedCase(IWContext iwc, User user, Long processInstanceId) {
 		String uri = builderLorgicWrapper.getBuilderService(iwc).getFullPageUrlByPageType(user, iwc, BPMUser.defaultAssetsViewPageType, true);
-		return uri + "?piId=" + processInstanceId;
+		if (StringUtil.isEmpty(uri)) {
+			return null;
+		}
+		
+		URIUtil uriUtil = new URIUtil(uri);
+		uriUtil.setParameter(ProcessManagerBind.processInstanceIdParam, processInstanceId.toString());
+		uriUtil.setParameter(CasesRetrievalManager.COMMENTS_PERSISTENCE_MANAGER_IDENTIFIER, TendersCommentsPersistenceManager.BEAN_IDENTIFIER);
+		
+		return uriUtil.getUri();
 	}
 
 	public boolean doSubscribeToCase(IWContext iwc, User user, String caseId) {
