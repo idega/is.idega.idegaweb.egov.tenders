@@ -66,6 +66,11 @@ public class TenderApplicationHandler implements ActionHandler {
 		
 		IWTimestamp changedTime = new IWTimestamp(value.getTime());
 		changedTime.setDay(changedTime.getDay() + change);
+		changedTime.setHour(23);
+		changedTime.setMinute(59);
+		changedTime.setSecond(59);
+		changedTime.setMilliSecond(999);
+		
 		value = new Date(changedTime.getTimestamp().getTime());
 		
 		taskInstance.addVariable(dateVariable, value);
