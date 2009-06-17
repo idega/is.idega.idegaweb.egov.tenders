@@ -8,6 +8,7 @@ import java.util.Locale;
 import com.idega.block.process.business.CaseBusiness;
 import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.idegaweb.IWApplicationContext;
+import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.paging.PagedDataCollection;
@@ -17,15 +18,15 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  *
- * Last modified: $Date: 2009/06/10 07:05:00 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/17 14:08:41 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow);
 
-	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser);
+	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser, Locale locale);
 	
 	public CasePresentationInfo getTenderCaseInfo(Object caseId);
 
@@ -43,5 +44,9 @@ public interface TendersHelper {
 	
 	public boolean disableToSeeAllAttachments(TaskInstanceW taskInstance);
 	
-	public boolean enableToSeeAllAttachments(TaskInstanceW taskInstance);
+	public boolean enableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user);
+	
+	public boolean disableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user);
+	
+	public ProcessInstanceW getProcessInstance(String caseId);
 }

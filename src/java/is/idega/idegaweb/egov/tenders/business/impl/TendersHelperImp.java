@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,7 @@ import com.idega.block.process.data.CaseCode;
 import com.idega.block.process.data.CaseCodeHome;
 import com.idega.block.process.data.CaseHome;
 import com.idega.block.process.presentation.beans.CasePresentation;
+import com.idega.block.process.presentation.beans.CasePresentationComparator;
 import com.idega.builder.business.BuilderLogicWrapper;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
@@ -47,10 +49,13 @@ import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
 import com.idega.jbpm.data.ProcessManagerBind;
+import com.idega.jbpm.data.dao.BPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
+import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.jbpm.identity.BPMUser;
 import com.idega.jbpm.identity.Role;
+import com.idega.jbpm.identity.RolesManager;
 import com.idega.jbpm.identity.permission.Access;
 import com.idega.jbpm.variables.BinaryVariable;
 import com.idega.presentation.IWContext;
@@ -65,9 +70,9 @@ import com.idega.util.expression.ELUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  *
- * Last modified: $Date: 2009/06/15 10:02:29 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/17 14:08:41 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -86,6 +91,12 @@ public class TendersHelperImp implements TendersHelper {
 	
 	@Autowired
 	private BPMFactory bpmFactory;
+	
+	@Autowired
+	private BPMDAO bpmDAO;
+	
+	@Autowired
+	private RolesManager rolesManager;
 	
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow) {
 		CaseHome caseHome = null;
@@ -142,7 +153,7 @@ public class TendersHelperImp implements TendersHelper {
 	}
 	
 	@Transactional(readOnly=true)
-	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser) {
+	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser, Locale locale) {
 		if (ListUtil.isEmpty(cases)) {
 			return null;
 		}
@@ -233,7 +244,7 @@ public class TendersHelperImp implements TendersHelper {
 		}
 		
 		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-		Collection<CasePresentation> validCases = new ArrayList<CasePresentation>();
+		List<CasePresentation> validCases = new ArrayList<CasePresentation>();
 		for (CasePresentationInfo caseInfo: info.values()) {
 			if (isCaseVisible(caseInfo, currentUser)) {
 				if (caseInfo.getStartDate() != null && caseInfo.getEndDate() != null) {
@@ -243,6 +254,9 @@ public class TendersHelperImp implements TendersHelper {
 				}
 			}
 		}
+		
+		Collections.sort(validCases, new CasePresentationComparator(locale));
+		
 		return validCases;
 	}
 	
@@ -450,27 +464,10 @@ public class TendersHelperImp implements TendersHelper {
 	}
 
 	public boolean disableToSeeAllAttachments(TaskInstanceW taskInstance) {
-		for (String roleName: TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES) {
-			if (!setAccessRight(taskInstance, roleName, null)) {
-				return false;
-			}
-		}
-		
-		return true;
+		return setAccessRight(taskInstance, TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES, null);
 	}
 
-	public boolean enableToSeeAllAttachments(TaskInstanceW taskInstance) {
-		for (String roleName: TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES) {
-			if (!setAccessRight(taskInstance, roleName, Access.read)) {
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
-	@Transactional(readOnly = true)
-	private boolean setAccessRight(TaskInstanceW taskInstance, String roleName, Access access) {
+	private boolean setAccessRight(TaskInstanceW taskInstance, List<String> rolesNames, Access access) {
 		if (taskInstance == null) {
 			return false;
 		}
@@ -482,7 +479,9 @@ public class TendersHelperImp implements TendersHelper {
 		
 		try {
 			for (BinaryVariable attachment: attachments) {
-				taskInstance.setTaskRolePermissions(new Role(roleName, access), false, attachment.getIdentifier());
+				for (String roleName: rolesNames) {
+					taskInstance.setTaskRolePermissions(new Role(roleName, access), false, String.valueOf(attachment.getHash()));
+				}
 			}
 		} catch(Exception e) {
 			LOGGER.log(Level.WARNING, "Error setting access rights for task: " + taskInstance.getTaskInstanceId(), e);
@@ -490,6 +489,69 @@ public class TendersHelperImp implements TendersHelper {
 		}
 		
 		return true;
+	}
+	
+	public boolean enableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user) {
+		return setAccessRight(processInstance, Access.seeAttachments, user);
+	}
+	
+	public boolean disableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user) {
+		return setAccessRight(processInstance, null, user);
+	}
+
+	private boolean setAccessRight(ProcessInstanceW processInstance, Access access, User user) {
+		if (processInstance == null || user == null) {
+			return false;
+		}
+		
+		try {
+			TaskInstanceW taskInstance = processInstance.getStartTaskInstance();
+			
+			Role role = new Role(TendersConstants.TENDER_CASES_INVITED_ROLE, access);
+			role.setUserId(user.getId());
+			
+			getBpmFactory().getRolesManager().setAttachmentsPermission(role, processInstance.getProcessInstanceId(), taskInstance.getTaskInstanceId(),
+					Integer.valueOf(user.getId()));
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error setting access rights", e);
+			return false;
+		}
+		return true;
+	}
+
+	public ProcessInstanceW getProcessInstance(String caseId) {
+		if (StringUtil.isEmpty(caseId)) {
+			return null;
+		}
+		
+		CaseProcInstBind bind = null;
+		try {
+			bind = getCasesDAO().getCaseProcInstBindByCaseId(Integer.valueOf(caseId));
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting process instace for case: " + caseId);
+		}
+		if (bind == null) {
+			return null;
+		}
+		
+		Long processInstanceId = bind.getProcInstId();
+		return getBpmFactory().getProcessManagerByProcessInstanceId(processInstanceId).getProcessInstance(processInstanceId);
+	}
+
+	public BPMDAO getBpmDAO() {
+		return bpmDAO;
+	}
+
+	public void setBpmDAO(BPMDAO bpmDAO) {
+		this.bpmDAO = bpmDAO;
+	}
+
+	public RolesManager getRolesManager() {
+		return rolesManager;
+	}
+
+	public void setRolesManager(RolesManager rolesManager) {
+		this.rolesManager = rolesManager;
 	}
 	
 }
