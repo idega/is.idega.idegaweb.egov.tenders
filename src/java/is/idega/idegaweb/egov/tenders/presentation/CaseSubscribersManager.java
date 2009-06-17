@@ -1,8 +1,6 @@
 package is.idega.idegaweb.egov.tenders.presentation;
 
 import is.idega.idegaweb.egov.cases.presentation.CasesProcessor;
-import is.idega.idegaweb.egov.tenders.TendersConstants;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,8 +10,6 @@ import javax.faces.component.UIComponent;
 import com.idega.block.process.data.Case;
 import com.idega.block.process.presentation.UserCases;
 import com.idega.block.process.presentation.beans.CasePresentation;
-import com.idega.data.IDOLookup;
-import com.idega.data.IDOLookupException;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.jbpm.exe.ProcessInstanceW;
@@ -28,7 +24,6 @@ import com.idega.presentation.ui.Label;
 import com.idega.presentation.ui.SelectOption;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.user.data.User;
-import com.idega.user.data.UserHome;
 import com.idega.user.presentation.user.UsersFilter;
 import com.idega.util.ArrayUtil;
 import com.idega.util.ListUtil;
@@ -157,14 +152,13 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		}
 		
 		String caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
-		String metaDataKey = getMetaDataKey(caseId);
+		String metaDataKey = getTendersHelper().getMetaDataKey(caseId);
 		ProcessInstanceW processInstance = getTendersHelper().getProcessInstance(caseId);
 		try {
 			for (User newPayer: newPayers) {
 				newPayer.setMetaData(metaDataKey, Boolean.TRUE.toString());
 				newPayer.store();
 				
-				//	TODO: test it
 				if (!getTendersHelper().enableToSeeAllAttachmentsForUser(processInstance, newPayer)) {
 					savePayersActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_payers", "Unable to save: unable to set payers");
 					return false;
@@ -229,15 +223,14 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 	private boolean removeAllPayers(IWContext iwc) {
 		IWResourceBundle iwrb = getResourceBundle(iwc);
 		
-		Collection<User> payers = getPayers();
+		Collection<User> payers = getTendersHelper().getPayers(getCaseId());
 		if (ListUtil.isEmpty(payers)) {
 			return true;
 		}
 		
 		String caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
-		String metaDataKey = getMetaDataKey(caseId);
+		String metaDataKey = getTendersHelper().getMetaDataKey(caseId);
 		ProcessInstanceW processInstance = getTendersHelper().getProcessInstance(caseId);
-		System.out.println(processInstance.getProcessInstance());
 		try {
 			for (User payer: payers) {
 				String metaData = payer.getMetaData(metaDataKey);
@@ -260,10 +253,6 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		
 		savePayersActionMessage = iwrb.getLocalizedString("tender_case_manager.payers_removed_successfully", "All payers were removed successfully");
 		return true;
-	}
-	
-	private String getMetaDataKey(String caseId) {
-		return new StringBuilder(TendersConstants.USER_HAS_PAYED_FOR_TENDER_CASE_ATTACHMENTS_META_DATA_KEY).append(caseId).toString();
 	}
 	
 	private DropdownMenu getCasesToManage(IWContext iwc) {
@@ -398,7 +387,7 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 	}
 	
 	private List<String> getPayersIds(IWContext iwc) {
-		Collection<User> payers = getPayers();
+		Collection<User> payers = getTendersHelper().getPayers(getCaseId());
 		if (ListUtil.isEmpty(payers)) {
 			return null;
 		}
@@ -408,26 +397,6 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 			ids.add(payer.getId());
 		}
 		return ids;
-	}
-	
-	private Collection<User> getPayers() {
-		UserHome userHome = null;
-		try {
-			userHome = (UserHome) IDOLookup.getHome(User.class);
-		} catch (IDOLookupException e) {
-			e.printStackTrace();
-		}
-		if (userHome == null) {
-			return null;
-		}
-		
-		try {
-			return userHome.findUsersByMetaData(getMetaDataKey(getCaseId()), Boolean.TRUE.toString());
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		return null;
 	}
 	
 	private int parseAction(IWContext iwc) {

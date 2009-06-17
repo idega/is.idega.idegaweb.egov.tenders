@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 import com.idega.block.process.business.CaseBusiness;
+import com.idega.block.process.data.Case;
 import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.jbpm.exe.ProcessInstanceW;
@@ -18,9 +19,9 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  *
- * Last modified: $Date: 2009/06/17 14:08:41 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/17 15:24:24 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
@@ -49,4 +50,11 @@ public interface TendersHelper {
 	public boolean disableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user);
 	
 	public ProcessInstanceW getProcessInstance(String caseId);
+	public ProcessInstanceW getProcessInstance(Long processInstanceId);
+	
+	public Case getCase(Long processInstanceId);
+	
+	public Collection<User> getPayers(String caseId);
+	
+	public String getMetaDataKey(String caseId);
 }

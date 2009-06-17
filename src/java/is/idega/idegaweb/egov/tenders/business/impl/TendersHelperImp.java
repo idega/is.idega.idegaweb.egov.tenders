@@ -61,6 +61,7 @@ import com.idega.jbpm.variables.BinaryVariable;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.paging.PagedDataCollection;
 import com.idega.user.data.User;
+import com.idega.user.data.UserHome;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
@@ -70,9 +71,9 @@ import com.idega.util.expression.ELUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  *
- * Last modified: $Date: 2009/06/17 14:08:41 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/17 15:24:24 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -552,6 +553,58 @@ public class TendersHelperImp implements TendersHelper {
 
 	public void setRolesManager(RolesManager rolesManager) {
 		this.rolesManager = rolesManager;
+	}
+
+	public Case getCase(Long processInstanceId) {
+		CaseProcInstBind bind = null;
+		try {
+			bind = getCasesDAO().getCaseProcInstBindByProcessInstanceId(processInstanceId);
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting case for process instance: " + processInstanceId);
+		}
+		if (bind == null) {
+			return null;
+		}
+		
+		try {
+			return getCaseBusiness(IWMainApplication.getDefaultIWApplicationContext()).getCase(bind.getCaseId());
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting case by id: " + bind.getCaseId(), e);
+		}
+		
+		return null;
+	}
+
+	public Collection<User> getPayers(String caseId) {
+		if (StringUtil.isEmpty(caseId)) {
+			return null;
+		}
+		
+		UserHome userHome = null;
+		try {
+			userHome = (UserHome) IDOLookup.getHome(User.class);
+		} catch (IDOLookupException e) {
+			e.printStackTrace();
+		}
+		if (userHome == null) {
+			return null;
+		}
+		
+		try {
+			return userHome.findUsersByMetaData(getMetaDataKey(caseId), Boolean.TRUE.toString());
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public String getMetaDataKey(String caseId) {
+		return new StringBuilder(TendersConstants.USER_HAS_PAYED_FOR_TENDER_CASE_ATTACHMENTS_META_DATA_KEY).append(caseId).toString();
+	}
+
+	public ProcessInstanceW getProcessInstance(Long processInstanceId) {
+		return getBpmFactory().getProcessManagerByProcessInstanceId(processInstanceId).getProcessInstance(processInstanceId);
 	}
 	
 }
