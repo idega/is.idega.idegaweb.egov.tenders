@@ -29,9 +29,9 @@ import com.idega.util.expression.ELUtil;
  * Viewer filters tenders cases
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  *
- * Last modified: $Date: 2009/06/05 12:56:41 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/17 12:35:54 $ by: $Author: valdas $
  */
 public class TenderCasesViewer extends OpenCases {
 	
@@ -60,7 +60,7 @@ public class TenderCasesViewer extends OpenCases {
 				return;
 			}
 			
-			Collection<CasePresentation> validCases = tendersHelper.getValidTendersCases(cases.getCollection(), currentUser);
+			Collection<CasePresentation> validCases = tendersHelper.getValidTendersCases(cases.getCollection(), currentUser, iwc.getCurrentLocale());
 			if (ListUtil.isEmpty(validCases)) {
 				container.add(new Heading1(getResourceBundle(iwc).getLocalizedString("tender_cases.no_cases_available", "There are no cases currently")));
 				return;
