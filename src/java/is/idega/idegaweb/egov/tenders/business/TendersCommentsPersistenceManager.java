@@ -125,5 +125,10 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 	public void setTendersHelper(TendersHelper tendersHelper) {
 		this.tendersHelper = tendersHelper;
 	}
+
+	@Override
+	public boolean isNotificationsAutoEnabled(CommentsViewerProperties properties) {
+		return properties == null ? false : true;
+	}
 	
 }
