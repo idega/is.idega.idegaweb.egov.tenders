@@ -4,7 +4,9 @@ import is.idega.idegaweb.egov.bpm.business.BPMCommentsPersistenceManager;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,11 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.idega.block.article.bean.CommentsViewerProperties;
+import com.idega.block.article.data.Comment;
 import com.idega.block.process.data.Case;
 import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.user.data.User;
 import com.idega.util.ListUtil;
+import com.idega.util.StringUtil;
 
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 @Service(TendersCommentsPersistenceManager.BEAN_IDENTIFIER)
@@ -118,6 +122,61 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 		return commentId;
 	}
 
+	@Override
+	public List<String> getPersonsToNotifyAboutComment(CommentsViewerProperties properties, Object commentId, boolean justPublished) {
+		if (properties == null || commentId == null) {
+			return null;
+		}
+	
+		Comment comment = getComment(commentId);
+		if (comment == null) {
+			return null;
+		}
+		
+		List<String> emails = null;
+		if (properties.getReplyForComment() == null ? false : properties.getReplyForComment() < 0 ? false : true) {
+			//	Reply to comment: notifying only author
+			Comment originalComment = getComment(properties.getReplyForComment());
+			if (originalComment == null) {
+				return null;
+			}
+			
+			String authorEmail = getUserMail(originalComment.getAuthorId());
+			if (StringUtil.isEmpty(authorEmail)) {
+				return null;
+			}
+			
+			List<String> allSubscribers = getAllFeedSubscribers(properties.getIdentifier(), null);
+			if (ListUtil.isEmpty(allSubscribers)) {
+				return null;
+			}
+			
+			emails = allSubscribers.contains(authorEmail) ? Arrays.asList(authorEmail) : null;
+		} else if (comment.isPrivateComment() && !justPublished) {
+			//	Private comment was created: notifying handlers
+			emails = getEmails(getUsersByRoleKey());
+		} else if (justPublished) {
+			//	Private comment was published: notifying everybody except author and handlers
+			List<String> subscribersEmails = getAllFeedSubscribers(properties.getIdentifier(), comment.getAuthorId());
+			if (ListUtil.isEmpty(subscribersEmails)) {
+				return null;
+			}
+			
+			List<String> handlersEmails = getEmails(getUsersByRoleKey());
+			if (ListUtil.isEmpty(handlersEmails)) {
+				return subscribersEmails;
+			}
+			
+			subscribersEmails.removeAll(handlersEmails);
+			emails = subscribersEmails;
+		} else {
+			//	Public comment, notifying all "subscribers" except author
+			emails = getAllFeedSubscribers(properties.getIdentifier(), comment.getAuthorId());
+		}
+		
+		return emails;
+	}
+
 	public TendersHelper getTendersHelper() {
 		return tendersHelper;
 	}
@@ -129,6 +188,11 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 	@Override
 	public boolean isNotificationsAutoEnabled(CommentsViewerProperties properties) {
 		return properties == null ? false : true;
+	}
+
+	@Override
+	public String getHandlerRoleKey() {
+		return TendersConstants.TENDER_CASES_HANDLER_ROLE;
 	}
 	
 }
