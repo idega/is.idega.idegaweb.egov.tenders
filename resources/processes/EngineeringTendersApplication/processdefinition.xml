@@ -23,22 +23,22 @@
   <event type="process-start">
     <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
             <handlerName>rolesAssignmentHandler</handlerName>
-                    <propertyMap key-type='java.lang.String' value-type='java.lang.String'>
-                        <entry>
-                            <key>assignmentExpression</key>
-                            <value>
-                               ${
-                               String handlerRoleName = resolver.get("handlerRoleName");
-                               String handlerNativeRoleName = handlerRoleName;
-                               
-                               return
-                               "{rolesAssignment: {roles: {role: ["+
-                               "     {roleName: \""+handlerRoleName+"\", identities: {identity: [{identityType: ROLE, identityId: \""+handlerNativeRoleName+"\"}]}}"+
-                               " ]} }}";
-                               }
-                            </value>
-                    </entry>
-                </propertyMap>
+            <propertyMap key-type='java.lang.String' value-type='java.lang.String'>
+	            <entry>
+	            	<key>assignmentExpression</key>
+	                <value>
+	                	${
+	                    	String handlerRoleName = resolver.get("handlerRoleName");
+	                        String handlerNativeRoleName = handlerRoleName;
+	                              
+	                        return
+	                        	"{rolesAssignment: {roles: {role: ["+
+	                            "     {roleName: \""+handlerRoleName+"\", identities: {identity: [{identityType: ROLE, identityId: \""+handlerNativeRoleName+"\"}]}}"+
+	                            " ]} }}";
+	                    }
+	                </value>
+	            </entry>
+            </propertyMap>
         </action>
   </event>
   
@@ -217,6 +217,8 @@
    </end-state>
 
 	<end-state name="emailsFetcherEnd"></end-state>
+
+	<end-state name="editTenderEnd"></end-state>
 
 	<event type="handlerAssignedToCase">
         <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
@@ -521,7 +523,79 @@
 
 	<fork name="fork1">
 		<transition to="submitProcessRuling" name="toSubmitProcessRuling"></transition>
+		<transition to="editTender" name="toEditTender"></transition>
 	</fork>
+
+	<task-node name="editTender">
+		<task name="EditTender" priority="-1">
+			<assignment class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
+				<handlerName>jsonAssignmentHandler</handlerName>
+				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
+					<entry><key>expression</key>
+						<value>
+				             {taskAssignment: {roles: {role: [
+				                   {roleName: "bpm_engineering_tenders_handler", accesses: {access: [read]}},
+				                   {roleName: "bpm_engineering_tenders_owner", accesses: {access: [read, write]}, assignIdentities: {string: ["current_user"]}},
+				                   {roleName: "bpm_engineering_tenders_invited", accesses: {access: [read, seeComments, writeComments]}, rolesComments: {string: ["all"]}}
+		               		 ]} }}
+			            </value>
+					</entry>
+				</propertyMap>
+			 </assignment>
+         <controller>
+            <variable name="string_caseDescription" access="read,write,required"></variable>
+			<variable name="string_caseIdentifier" access="read,write"></variable>
+			<variable access="read,write,required" name="string_issuerOfTender"></variable>
+			<variable access="read,write" name="string_descriptionOfJob"></variable>
+			<variable access="read,write,required" name="date_whenTheTenderShouldBeDisplayed"></variable>
+			<variable access="read,write,required" name="date_lastDayToSendBids"></variable>
+			<variable access="read,write" name="files_tenderApplicationFiles"></variable>
+			<variable access="read,write" name="string_caseIsPrivate"></variable>
+			<variable access="read,write" name="string_paymentCase"></variable>
+         </controller>
+      </task>
+		<event type="task-end">
+			<script>
+				<expression>
+					taskInstanceId = taskInstance.getId();
+		 		</expression>
+				<variable name='startTaskInstanceId' access='write' mapped-name='taskInstanceId' />
+			</script>
+		</event>
+      	<event type="node-leave">
+      		<script>
+      			<expression>
+      				c_otd = new is.idega.idegaweb.egov.tenders.bean.TenderApplicationData();
+      				c_otd.setPrivateCaseValue(privateCaseValue);
+      				c_otd.setPaymentCaseValue(paymentCaseValue);
+      				c_otd.setWhenTheTenderShouldBeDisplayed(whenTheTenderShouldBeDisplayed);
+      				c_otd.setLastDayToSendBids(lastDayToSendBids);
+      			</expression>
+      			<variable name='ownerTenderData' access='write' mapped-name='c_otd' />
+      			<variable name='string_caseIsPrivate' access='read' mapped-name='privateCaseValue' />
+      			<variable name='string_paymentCase' access='read' mapped-name='paymentCaseValue' />
+      			<variable name='date_whenTheTenderShouldBeDisplayed' access='read' mapped-name='whenTheTenderShouldBeDisplayed' />
+      			<variable name='date_lastDayToSendBids' access='read' mapped-name='lastDayToSendBids' />
+      		</script>
+			<action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
+            	<handlerName>setProcessDescriptionHandler</handlerName>
+          	</action>
+          	<action class="com.idega.jbpm.proxy.JbpmHandlerProxy">
+				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
+                	<entry>
+                		<key>tenderData</key>
+                		<value>#{ownerTenderData}</value>
+                	</entry>
+                	<entry>
+						<key>taskInstanceId</key>
+						<value>#{startTaskInstanceId}</value>
+					</entry>
+                </propertyMap>
+				<handlerName>tenderApplicationHandler</handlerName>
+			</action>
+		</event>
+		<transition to="editTenderEnd"></transition>
+	</task-node>
 	
 	<idg:roles xmlns:idg="http://idega.com/bpm">
         <role name="bpm_engineering_tenders_caseHandler">
