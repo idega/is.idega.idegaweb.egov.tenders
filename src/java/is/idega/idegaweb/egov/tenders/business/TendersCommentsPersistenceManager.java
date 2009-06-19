@@ -97,14 +97,14 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 		
 		ProcessInstanceW processInstance = getTendersHelper().getProcessInstance(Long.valueOf(properties.getIdentifier()));
 	
-		TaskInstanceW taskInstance = processInstance.getStartTaskInstance();
+		TaskInstanceW taskInstance = getSubmittedTaskInstance(processInstance, getTaskNameForAttachments());
 		Object paymentVariable = taskInstance.getVariable(TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE);
 		if (paymentVariable == null || !Boolean.TRUE.toString().equals(paymentVariable.toString())) {
 			return commentId;	//	Not "payment" case, no need to enable/disable attachments
 		}
 		
 		//	Disabling ALL attachments for ALL users
-		getTendersHelper().disableToSeeAllAttachments(processInstance.getStartTaskInstance());
+		getTendersHelper().disableToSeeAllAttachments(taskInstance);
 		
 		//	Enabling new attachments for payers
 		Case theCase = getTendersHelper().getCase(processInstance.getProcessInstanceId());
