@@ -71,9 +71,9 @@ import com.idega.util.expression.ELUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  *
- * Last modified: $Date: 2009/06/17 15:24:24 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/22 09:57:18 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -464,8 +464,67 @@ public class TendersHelperImp implements TendersHelper {
 		this.bpmFactory = bpmFactory;
 	}
 
-	public boolean disableToSeeAllAttachments(TaskInstanceW taskInstance) {
-		return setAccessRight(taskInstance, TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES, null);
+	public boolean disableToSeeAllAttachmentsForNonPayers(TaskInstanceW currentTask) {
+		if (currentTask == null) {
+			return false;
+		}
+		
+		ProcessInstanceW processInstance = currentTask.getProcessInstanceW();
+		if (processInstance == null) {
+			return false;
+		}
+		
+		//	Disabling for all users
+		List<TaskInstanceW> tasks = processInstance.getSubmittedTaskInstances();
+		if (ListUtil.isEmpty(tasks)) {
+			tasks = Arrays.asList(currentTask);
+		} else if (!tasks.contains(currentTask)) {
+				tasks.add(currentTask);
+		}
+		
+		if (!disableToSeeAllAttachments(tasks)) {
+			return false;
+		}
+		
+		Case theCase = getCase(processInstance.getProcessInstanceId());
+		if (theCase == null) {
+			return false;
+		}
+		
+		Collection<User> payers = getPayers(theCase.getPrimaryKey().toString());
+		if (ListUtil.isEmpty(payers)) {
+			return true;
+		}
+		
+		//	Enabling just for payers
+		for (User payer: payers) {
+			if (!enableToSeeAllAttachmentsForUser(processInstance.getProcessInstanceId(), tasks, payer)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public boolean disableToSeeAllAttachments(ProcessInstanceW processInstance) {
+		if (processInstance == null) {
+			return false;
+		}
+		
+		return disableToSeeAllAttachments(processInstance.getAllTaskInstances());
+	}
+	
+	private boolean disableToSeeAllAttachments(List<TaskInstanceW> tasks) {
+		if (ListUtil.isEmpty(tasks)) {
+			return false;
+		}
+		
+		for (TaskInstanceW taskInstance: tasks) {
+			if (!setAccessRight(taskInstance, TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES, null)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private boolean setAccessRight(TaskInstanceW taskInstance, List<String> rolesNames, Access access) {
@@ -496,6 +555,10 @@ public class TendersHelperImp implements TendersHelper {
 		return setAccessRight(processInstance, Access.seeAttachments, user);
 	}
 	
+	private boolean enableToSeeAllAttachmentsForUser(Long processInstanceId, List<TaskInstanceW> tasks, User user) {
+		return setAccessRight(processInstanceId, tasks, Access.seeAttachments, user);
+	}
+	
 	public boolean disableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user) {
 		return setAccessRight(processInstance, null, user);
 	}
@@ -505,14 +568,23 @@ public class TendersHelperImp implements TendersHelper {
 			return false;
 		}
 		
+		return setAccessRight(processInstance.getProcessInstanceId(), processInstance.getSubmittedTaskInstances(), access, user);
+	}
+		
+	private boolean setAccessRight(Long processInstanceId, List<TaskInstanceW> tasks, Access access, User user) {
+		if (ListUtil.isEmpty(tasks)) {
+			return false;
+		}
+		
 		try {
-			TaskInstanceW taskInstance = processInstance.getStartTaskInstance();
-			
-			Role role = new Role(TendersConstants.TENDER_CASES_INVITED_ROLE, access);
-			role.setUserId(user.getId());
-			
-			getBpmFactory().getRolesManager().setAttachmentsPermission(role, processInstance.getProcessInstanceId(), taskInstance.getTaskInstanceId(),
-					Integer.valueOf(user.getId()));
+			for (TaskInstanceW taskInstance: tasks) {
+				Role role = new Role(TendersConstants.TENDER_CASES_INVITED_ROLE, access);
+				role.setUserId(user.getId());
+				role.setForTaskInstance(Boolean.TRUE);
+				
+				getBpmFactory().getRolesManager().setAttachmentsPermission(role, processInstanceId, taskInstance.getTaskInstanceId(),
+						Integer.valueOf(user.getId()));
+			}
 		} catch(Exception e) {
 			LOGGER.log(Level.WARNING, "Error setting access rights", e);
 			return false;

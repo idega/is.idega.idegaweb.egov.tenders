@@ -104,7 +104,7 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 		}
 		
 		//	Disabling ALL attachments for ALL users
-		getTendersHelper().disableToSeeAllAttachments(taskInstance);
+		getTendersHelper().disableToSeeAllAttachments(processInstance);
 		
 		//	Enabling new attachments for payers
 		Case theCase = getTendersHelper().getCase(processInstance.getProcessInstanceId());

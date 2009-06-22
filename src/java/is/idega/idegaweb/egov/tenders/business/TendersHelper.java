@@ -19,9 +19,9 @@ import com.idega.user.data.User;
  * Methods for Tenders
  * 
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  *
- * Last modified: $Date: 2009/06/17 15:24:24 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/06/22 09:57:18 $ by: $Author: valdas $
  */
 public interface TendersHelper {
 	
@@ -43,7 +43,9 @@ public interface TendersHelper {
 	
 	public CaseBusiness getCaseBusiness(IWApplicationContext iwac);
 	
-	public boolean disableToSeeAllAttachments(TaskInstanceW taskInstance);
+	public boolean disableToSeeAllAttachments(ProcessInstanceW processInstance);
+	
+	public boolean disableToSeeAllAttachmentsForNonPayers(TaskInstanceW currentTask);
 	
 	public boolean enableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user);
 	

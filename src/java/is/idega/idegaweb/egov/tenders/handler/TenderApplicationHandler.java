@@ -44,18 +44,18 @@ public class TenderApplicationHandler implements ActionHandler {
 			return;
 		}
 		
-		TaskInstanceW taskInstance = getBpmFactory().getTaskInstanceW(taskInstanceId);
-		if (taskInstance == null) {
+		TaskInstanceW currentTask = getBpmFactory().getTaskInstanceW(taskInstanceId);
+		if (currentTask == null) {
 			LOGGER.warning("Task instance was not found by provided id: " + taskInstanceId);
 			return;
 		}
 		
-		addDateVariable(taskInstance, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -7);
-		addDateVariable(taskInstance, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -4);
+		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -7);
+		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -4);
 		
 		if (data.isPaymentCase()) {
-			if (!getTendersHelper().disableToSeeAllAttachments(taskInstance)) {
-				LOGGER.warning("Unable to disable seeing attachments of task " + taskInstance.getTaskInstance().getName() + " for roles: " +
+			if (!getTendersHelper().disableToSeeAllAttachmentsForNonPayers(currentTask)) {
+				LOGGER.warning("Unable to disable seeing attachments of task " + currentTask.getTaskInstance().getName() + " for roles: " +
 						TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES);
 			}
 		}
