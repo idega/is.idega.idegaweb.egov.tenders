@@ -128,6 +128,19 @@
                 </propertyMap>
 				<handlerName>tenderApplicationHandler</handlerName>
 			</action>
+			<action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
+				<handlerName>casesStatusHandler</handlerName>
+				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
+				   	<entry>
+				   		<key>caseStatusMappedName</key>
+				   		<value>caseStatusCreated</value>
+				   	</entry>
+				  	<entry>
+				  		<key>processInstanceId</key>
+				  		<value>#{mainProcessInstanceId}</value>
+				  	</entry>
+				</propertyMap>
+			</action>
 		</event>
 		<transition to="fork3"></transition>
    </start-state>
@@ -263,7 +276,10 @@
         <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
 				<handlerName>caseHandlerAssignmentHandler</handlerName>
 				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
-			      	<entry><key>caseHandlerRoleExp</key><value>{role: {roleName: "bpm_engineering_tenders_caseHandler"}}</value></entry>
+			      	<entry>
+			      		<key>caseHandlerRoleExp</key>
+			      		<value>{role: {roleName: "bpm_engineering_tenders_caseHandler"}}</value>
+			      	</entry>
 			        <entry>
 			        	<key>inlineSubject</key>
 			        	<value>
@@ -293,7 +309,10 @@
 			        		{list: {mv: [{type: "bean", value: "user.name"}, {type: "bean", value: "piw.processDefinitionW.startTaskName"}, {type: "bean", value: "piw.processIdentifier"}, {type: "bean", value: "piw.processDescription"}]}}
                 		</value>
                 	</entry>
-                	<entry><key>sendToRoles</key><value>bpm_engineering_tenders_handler</value></entry>
+                	<entry>
+                		<key>sendToRoles</key>
+                		<value>bpm_engineering_tenders_handler</value>
+                	</entry>
 			    </propertyMap>
 		</action>
     </event>
@@ -301,10 +320,18 @@
         <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
 			<handlerName>casesStatusHandler</handlerName>
 			<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
-			   	   	<entry><key>caseStatusMappedName</key><value>caseStatusInProgress</value></entry>
-			  	<entry><key>ifCaseStatusMappedName</key><value>caseStatusOpened</value></entry>
-			  	<entry><key>processInstanceId</key><value>#{mainProcessInstanceId}</value></entry>
-		
+			   	<entry>
+			   		<key>caseStatusMappedName</key>
+			   		<value>caseStatusInProgress</value>
+			   	</entry>
+			  	<entry>
+			  		<key>ifCaseStatusMappedName</key>
+			  		<value>caseStatusCreated</value>
+			  	</entry>
+			  	<entry>
+			  		<key>processInstanceId</key>
+			  		<value>#{mainProcessInstanceId}</value>
+			  	</entry>
 			</propertyMap>
 		</action>
     </event>
@@ -312,6 +339,12 @@
       <event type="node-leave">
           <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
                 <handlerName>endCaseProcessHandler</handlerName>
+                <propertyMap key-type='java.lang.String' value-type='java.lang.String'>
+                	<entry>
+                		<key>caseStatus</key>
+			   			<value>caseStatusFinished</value>
+                	</entry>
+                </propertyMap>
           </action>
       </event>
       <transition to="endProcess"></transition>
