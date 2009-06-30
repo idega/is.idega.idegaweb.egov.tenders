@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 <web-app>
+<!--
     <filter>
         <filter-name>TenderCaseRedirector</filter-name>
         <filter-class>is.idega.idegaweb.egov.tenders.servlet.TenderCaseRedirector</filter-class>
@@ -10,4 +11,5 @@
         <filter-name>TenderCaseRedirector</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+-->
 </web-app>
