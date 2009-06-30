@@ -187,7 +187,9 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 
 	@Override
 	public boolean isNotificationsAutoEnabled(CommentsViewerProperties properties) {
-		return properties == null ? false : true;
+		boolean autoEnabled = properties == null ? false : true;
+		LOGGER.info("Auto enabled: " + autoEnabled + ", properties: " + properties);
+		return autoEnabled;
 	}
 
 	@Override
