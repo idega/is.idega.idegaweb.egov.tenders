@@ -105,6 +105,7 @@
       				c_otd.setPaymentCaseValue(paymentCaseValue);
       				c_otd.setWhenTheTenderShouldBeDisplayed(whenTheTenderShouldBeDisplayed);
       				c_otd.setLastDayToSendBids(lastDayToSendBids);
+      				c_otd.setCustomIdentifier(true);
       			</expression>
       			<variable name='ownerTenderData' access='write' mapped-name='c_otd' />
       			<variable name='string_caseIsPrivate' access='read' mapped-name='privateCaseValue' />

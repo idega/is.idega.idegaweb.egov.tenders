@@ -15,6 +15,8 @@ public class TenderApplicationData implements Serializable {
 	private Date whenTheTenderShouldBeDisplayed;
 	private Date lastDayToSendBids;
 	
+	private boolean customIdentifier;
+	
 	public String getPrivateCaseValue() {
 		return privateCaseValue;
 	}
@@ -51,4 +53,12 @@ public class TenderApplicationData implements Serializable {
 	public boolean isPaymentCase() {
 		return getBooleanValue(getPaymentCaseValue());
 	}
+	
+	public boolean isCustomIdentifier() {
+		return customIdentifier;
+	}
+	public void setCustomIdentifier(boolean customIdentifier) {
+		this.customIdentifier = customIdentifier;
+	}
+	
 }

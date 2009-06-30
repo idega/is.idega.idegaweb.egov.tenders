@@ -1,23 +1,34 @@
 package is.idega.idegaweb.egov.tenders.handler;
 
+import is.idega.idegaweb.egov.bpm.cases.CasesBPMProcessConstants;
+import is.idega.idegaweb.egov.bpm.cases.exe.CaseIdentifier;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.TenderApplicationData;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
-
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.idega.block.process.data.Case;
 import com.idega.block.process.variables.Variable;
 import com.idega.block.process.variables.VariableDataType;
+import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
+import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
+import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
+import com.idega.jbpm.variables.VariablesHandler;
+import com.idega.util.ArrayUtil;
 import com.idega.util.IWTimestamp;
 
 @Service("tenderApplicationHandler")
@@ -37,6 +48,16 @@ public class TenderApplicationHandler implements ActionHandler {
 	@Autowired
 	private TendersHelper tendersHelper;
 	
+	@Autowired
+	private CasesBPMDAO casesBPMDAO;
+	
+	@Autowired
+	private VariablesHandler variablesHandler;
+	
+	@Autowired
+	@Qualifier("tenderCaseIdentifier")
+	private CaseIdentifier caseIdentifier;
+	
 	public void execute(ExecutionContext context) throws Exception {
 		TenderApplicationData data = getTenderData();
 		if (data == null) {
@@ -50,6 +71,13 @@ public class TenderApplicationHandler implements ActionHandler {
 			return;
 		}
 		
+		if (data.isCustomIdentifier()) {
+			if (!setCustomdentifier(context, currentTask)) {
+				LOGGER.warning("Error setting custom identifier for task: " + taskInstanceId);
+				return;
+			}
+		}
+		
 		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -7);
 		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -4);
 		
@@ -59,6 +87,46 @@ public class TenderApplicationHandler implements ActionHandler {
 						TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES);
 			}
 		}
+	}
+	
+	@Transactional(readOnly = false)
+	private boolean setCustomdentifier(ExecutionContext context, TaskInstanceW currentTask) {
+		ProcessInstanceW processInstance = currentTask.getProcessInstanceW();
+		if (processInstance == null) {
+			return false;
+		}
+		
+		Case theCase = getTendersHelper().getCase(processInstance.getProcessInstanceId());
+		if (theCase == null) {
+			return false;
+		}
+		
+		Object[] data = getCaseIdentifier().generateNewCaseIdentifier();
+		if (ArrayUtil.isEmpty(data)) {
+			return false;
+		}
+		
+		String identifier = data[1].toString();
+		theCase.setCaseIdentifier(identifier);
+		theCase.store();
+		
+		CaseProcInstBind piBind = getCasesBPMDAO().getCaseProcInstBindByCaseId(Integer.valueOf(theCase.getPrimaryKey().toString()));
+		if (piBind == null) {
+			return false;
+		}
+		piBind.setCaseIdentierID((Integer) data[0]);
+		piBind.setCaseIdentifier(identifier);
+		getCasesBPMDAO().persist(piBind);
+		
+		Long taskInstanceId = currentTask.getTaskInstanceId();
+		Map<String, Object> variables = getVariablesHandler().populateVariables(taskInstanceId);
+		if (variables == null) {
+			variables = new HashMap<String, Object>();
+		}
+		variables.put(CasesBPMProcessConstants.caseIdentifier, identifier);
+		getVariablesHandler().submitVariablesExplicitly(variables, taskInstanceId);
+		
+		return true;
 	}
 	
 	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, int change) {
@@ -106,6 +174,30 @@ public class TenderApplicationHandler implements ActionHandler {
 
 	public void setTendersHelper(TendersHelper tendersHelper) {
 		this.tendersHelper = tendersHelper;
+	}
+
+	public CasesBPMDAO getCasesBPMDAO() {
+		return casesBPMDAO;
+	}
+
+	public void setCasesBPMDAO(CasesBPMDAO casesBPMDAO) {
+		this.casesBPMDAO = casesBPMDAO;
+	}
+
+	public VariablesHandler getVariablesHandler() {
+		return variablesHandler;
+	}
+
+	public void setVariablesHandler(VariablesHandler variablesHandler) {
+		this.variablesHandler = variablesHandler;
+	}
+
+	public CaseIdentifier getCaseIdentifier() {
+		return caseIdentifier;
+	}
+
+	public void setCaseIdentifier(CaseIdentifier caseIdentifier) {
+		this.caseIdentifier = caseIdentifier;
 	}
 
 }
