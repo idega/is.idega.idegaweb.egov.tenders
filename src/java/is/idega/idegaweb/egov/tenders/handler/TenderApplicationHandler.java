@@ -6,8 +6,6 @@ import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.TenderApplicationData;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.jbpm.graph.def.ActionHandler;
@@ -118,13 +116,8 @@ public class TenderApplicationHandler implements ActionHandler {
 		piBind.setCaseIdentifier(identifier);
 		getCasesBPMDAO().persist(piBind);
 		
-		Long taskInstanceId = currentTask.getTaskInstanceId();
-		Map<String, Object> variables = getVariablesHandler().populateVariables(taskInstanceId);
-		if (variables == null) {
-			variables = new HashMap<String, Object>();
-		}
-		variables.put(CasesBPMProcessConstants.caseIdentifier, identifier);
-		getVariablesHandler().submitVariablesExplicitly(variables, taskInstanceId);
+		Variable variable = new Variable(CasesBPMProcessConstants.caseIdentifier, VariableDataType.STRING);
+		currentTask.addVariable(variable, identifier);
 		
 		return true;
 	}
