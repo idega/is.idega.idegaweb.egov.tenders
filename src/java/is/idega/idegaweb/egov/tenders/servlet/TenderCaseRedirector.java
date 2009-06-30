@@ -36,7 +36,7 @@ public class TenderCaseRedirector extends BaseFilter implements Filter {
 	public void doFilter(ServletRequest srequest, ServletResponse sresponse, FilterChain chain) throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) srequest;
 		HttpServletResponse response = (HttpServletResponse) sresponse;
-		IWContext iwc = new IWContext(request, response, request.getSession().getServletContext());
+		IWContext iwc = getIWContext(request, response);
 		
 		if (!canRedirect(iwc)) {
 			chain.doFilter(srequest, sresponse);
