@@ -42,12 +42,14 @@ import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.core.accesscontrol.business.AccessController;
 import com.idega.core.accesscontrol.business.LoginSession;
+import com.idega.core.persistence.Param;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
+import com.idega.jbpm.data.ActorPermissions;
 import com.idega.jbpm.data.ProcessManagerBind;
 import com.idega.jbpm.data.dao.BPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
@@ -71,9 +73,9 @@ import com.idega.util.expression.ELUtil;
 /**
  * Helper methods for tenders project logic
  * @author <a href="mailto:valdas@idega.com">Valdas Žemaitis</a>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  *
- * Last modified: $Date: 2009/06/22 09:57:18 $ by: $Author: valdas $
+ * Last modified: $Date: 2009/07/03 09:01:16 $ by: $Author: valdas $
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -479,7 +481,7 @@ public class TendersHelperImp implements TendersHelper {
 		if (ListUtil.isEmpty(tasks)) {
 			tasks = Arrays.asList(currentTask);
 		} else if (!tasks.contains(currentTask)) {
-				tasks.add(currentTask);
+			tasks.add(currentTask);
 		}
 		
 		if (!disableToSeeAllAttachments(tasks)) {
@@ -578,18 +580,81 @@ public class TendersHelperImp implements TendersHelper {
 		
 		try {
 			for (TaskInstanceW taskInstance: tasks) {
+				List<BinaryVariable> attachments = taskInstance.getAttachments();
+				if (ListUtil.isEmpty(attachments)) {
+					continue;
+				}
+				
+				Map<String, Boolean> variablesAccesses = getAccessesForVariables(taskInstance, attachments);
+				
 				Role role = new Role(TendersConstants.TENDER_CASES_INVITED_ROLE, access);
 				role.setUserId(user.getId());
 				role.setForTaskInstance(Boolean.TRUE);
-				
-				getBpmFactory().getRolesManager().setAttachmentsPermission(role, processInstanceId, taskInstance.getTaskInstanceId(),
-						Integer.valueOf(user.getId()));
+				for (BinaryVariable attachment: attachments) {
+					String variableIdentifier = String.valueOf(attachment.getHash());
+					
+					boolean canSetPermission = canSetPermission(variablesAccesses, variableIdentifier);
+					if (canSetPermission) {
+						getBpmFactory().getRolesManager().setAttachmentPermission(role, processInstanceId, taskInstance.getTaskInstanceId(),
+								variableIdentifier, Integer.valueOf(user.getId()));
+					}
+				}
 			}
 		} catch(Exception e) {
 			LOGGER.log(Level.WARNING, "Error setting access rights", e);
 			return false;
 		}
+		
 		return true;
+	}
+	
+	private boolean canSetPermission(Map<String, Boolean> variablesAccesses, String variableIdentifier) {
+		if (variablesAccesses == null || ListUtil.isEmpty(variablesAccesses.values())) {
+			return true;
+		}
+		
+		Boolean access = variablesAccesses.get(variableIdentifier);
+		return access == null ? true : access.booleanValue();
+	}
+	
+	@Transactional(readOnly = true)
+	private Map<String, Boolean> getAccessesForVariables(TaskInstanceW taskInstance, List<BinaryVariable> attachments) {
+		List<ActorPermissions> perms = null;
+		try {
+			perms = getBpmDAO().getResultList(ActorPermissions.getSetByTaskIdOrTaskInstanceId, ActorPermissions.class,
+					new Param(ActorPermissions.taskInstanceIdProperty, taskInstance.getTaskInstanceId()),
+					new Param(ActorPermissions.taskIdProperty, Long.valueOf(-1))
+			);
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting permissions", e);
+		}
+		if (ListUtil.isEmpty(perms)) {
+			return null;
+		}
+		
+		List<String> identifiers = new ArrayList<String>(attachments.size());
+		for (BinaryVariable attachment: attachments) {
+			identifiers.add(String.valueOf(attachment.getHash()));
+		}
+		
+		Map<String, Boolean> accesses = new HashMap<String, Boolean>(identifiers.size());
+		
+		for (ActorPermissions permission: perms) {
+			String identifier = permission.getVariableIdentifier();
+			if (!StringUtil.isEmpty(identifier)) {
+				Boolean currentPermission = accesses.get(identifier);
+				
+				if (currentPermission == null || currentPermission.booleanValue()) {
+					Boolean canSeeAttachments = permission.getCanSeeAttachments();
+					
+					if (canSeeAttachments != null && "all".equals(permission.getCanSeeAttachmentsOfRoleName())) {
+						accesses.put(identifier, canSeeAttachments);
+					}
+				}
+			}
+		}
+		
+		return accesses;
 	}
 
 	public ProcessInstanceW getProcessInstance(String caseId) {
