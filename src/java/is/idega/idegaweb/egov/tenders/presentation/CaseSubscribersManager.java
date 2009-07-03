@@ -2,6 +2,7 @@ package is.idega.idegaweb.egov.tenders.presentation;
 
 import is.idega.idegaweb.egov.cases.presentation.CasesProcessor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -103,7 +104,7 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		if (ArrayUtil.isEmpty(usersIDs)) {
 			removeAllPayers(iwc);
 		} else {
-			setPayers(iwc, usersIDs);
+			setPayers(iwc, new ArrayList<String>(Arrays.asList(usersIDs)));
 		}
 	}
 
@@ -137,15 +138,43 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		return true;
 	}
 	
-	private boolean setPayers(IWContext iwc, String[] usersIDs) {
+	private boolean setPayers(IWContext iwc, List<String> payersIds) {
 		IWResourceBundle iwrb = getResourceBundle(iwc);
-
-		if (!removeAllPayers(iwc)) {
-			savePayersActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_payers", "Unable to save: unable to set payers");
-			return false;
+		
+		List<String> newPayersIds = null;
+		List<String> payersToRemove = new ArrayList<String>();
+		List<String> currentPayers = getPayersIds(iwc);
+		if (ListUtil.isEmpty(currentPayers)) {
+			//	No payers set for current case yet
+			newPayersIds = new ArrayList<String>(payersIds);
+		} else {
+			//	Will resolve which payers to remove and which payer are "new"
+			for (String currentPayerId: currentPayers) {
+				if (payersIds.contains(currentPayerId)) {
+					//	User is set as payer, not saving it again
+					payersIds.remove(currentPayerId);
+				} else {
+					//	User was removed from payers
+					payersToRemove.add(currentPayerId);
+				}
+			}
+			
+			if (!ListUtil.isEmpty(payersToRemove)) {
+				if (!removePayers(iwc, getUsers(iwc, ArrayUtil.convertListToArray(payersToRemove)))) {
+					savePayersActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_payers", "Unable to save: unable to set payers");
+					return false;
+				}
+			}
+			
+			if (ListUtil.isEmpty(payersIds)) {
+				savePayersActionMessage = iwrb.getLocalizedString("tender_case_manager.payers_set_successfully", "Payers were set successfully");
+				return true;
+			} else {
+				newPayersIds = new ArrayList<String>(payersIds);
+			}
 		}
 		
-		Collection<User> newPayers = getUsers(iwc, usersIDs);
+		Collection<User> newPayers = getUsers(iwc, ArrayUtil.convertListToArray(newPayersIds));
 		if (ListUtil.isEmpty(newPayers)) {
 			savePayersActionMessage = iwrb.getLocalizedString("tender_case_manager.unable_to_set_payers", "Unable to save: unable to set payers");
 			return false;
@@ -221,13 +250,16 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 	}
 	
 	private boolean removeAllPayers(IWContext iwc) {
-		IWResourceBundle iwrb = getResourceBundle(iwc);
-		
 		Collection<User> payers = getTendersHelper().getPayers(getCaseId());
 		if (ListUtil.isEmpty(payers)) {
 			return true;
 		}
 		
+		return removePayers(iwc, payers);
+	}
+	
+	private boolean removePayers(IWContext iwc, Collection<User> payers) {
+		IWResourceBundle iwrb = getResourceBundle(iwc);
 		String caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
 		String metaDataKey = getTendersHelper().getMetaDataKey(caseId);
 		ProcessInstanceW processInstance = getTendersHelper().getProcessInstance(caseId);
