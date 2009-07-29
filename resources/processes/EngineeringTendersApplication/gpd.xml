@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<root-container name="EngineeringTendersApplication" width="1016" height="1205">
+<root-container name="EngineeringTendersApplication" width="1016" height="1202">
   <node name="registerNewTender" x="328" y="-144" width="203" height="32">
     <edge>
       <label x="5" y="-10"/>

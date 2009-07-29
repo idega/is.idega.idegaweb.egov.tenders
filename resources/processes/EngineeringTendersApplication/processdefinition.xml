@@ -79,7 +79,7 @@
 		 </assignment>
          <controller>
             <variable name="string_caseDescription" access="write,required"></variable>
-			<variable name="string_caseIdentifier" access="write"></variable>
+			<variable name="string_caseIdentifier" access="write,required"></variable>
 			<variable access="write,required" name="string_issuerOfTender"></variable>
 			<variable access="write" name="string_descriptionOfJob"></variable>
 			<variable access="write,required" name="date_whenTheTenderShouldBeDisplayed"></variable>
