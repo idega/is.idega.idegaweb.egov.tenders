@@ -187,6 +187,11 @@ public class TendersHelperImp implements TendersHelper {
 		for (Object[] bind: binds) {
 			Object o = bind[1];
 			if (o instanceof ProcessInstance) {
+				ProcessInstance pi = (ProcessInstance) o;
+				if (pi.hasEnded()) {
+					continue;
+				}
+				
 				Long id = ((ProcessInstance) o).getId();
 				if (!processInstanceIds.contains(id)) {
 					o = bind[0];
