@@ -446,7 +446,12 @@ public class TendersHelperImp implements TendersHelper {
 				return false;
 			}
 			
-			return caseBusiness.addSubscriber(caseId, user);
+			if (caseBusiness.addSubscriber(caseId, user)) {
+				if (!iwc.getAccessController().hasRole(user, TendersConstants.TENDER_CASES_INVITED_ROLE)) {
+					iwc.getAccessController().addRoleToGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, user, iwc);
+				}
+				return true;
+			}
 		} catch(Exception e) {
 			LOGGER.log(Level.WARNING, "Error subscribing to case: " + caseId + ", for user: " + user, e);
 		}
