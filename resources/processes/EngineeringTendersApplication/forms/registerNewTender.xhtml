@@ -100,8 +100,7 @@
                 <xf:bind id="fbc_18_bind-entries"
                     nodeset="../entry[position() != last()]" type="xs:anyURI"/>
             </xf:bind>
-            <xf:bind id="fbc_51_bind"
-                nodeset="Identifier_number_fbc_51"
+            <xf:bind id="fbc_51_bind" nodeset="Identifier_number_fbc_51"
                 required="instance('control-instance')/required = 'true'" type="xs:string"/>
         </xf:model>
         <xf:model id="data_model">
@@ -133,7 +132,7 @@
                     <fbc_10-label lang="en">Tender name</fbc_10-label>
                     <fbc_11-label lang="is_IS">Verkkaupi</fbc_11-label>
                     <fbc_11-label lang="en">Who is issuing the tender</fbc_11-label>
-                    <fbc_12-label lang="is_IS">Lýsing á verki</fbc_12-label>
+                    <fbc_12-label lang="is_IS">Lýsing á verki</fbc_12-label>
                     <fbc_12-label lang="en">Description of job</fbc_12-label>
                     <fbc_15-label lang="is_IS">Birting útboðs</fbc_15-label>
                     <fbc_15-label lang="en">When the tender should be displayed</fbc_15-label>
@@ -162,13 +161,15 @@
                     <fbc_17-required lang="is_IS">Required</fbc_17-required>
                     <fbc_17-required lang="en">Required</fbc_17-required>
                     <fbc_19-label lang="en">Case is private</fbc_19-label>
-                    <fbc_19-label lang="is_IS">Case is private</fbc_19-label>
-                    <fbc_401-label lang="is_IS">Payment case</fbc_401-label>
+                    <fbc_19-label lang="is_IS">Lokað útboð</fbc_19-label>
+                    <fbc_401-label lang="is_IS">Þarfnast greiðslu</fbc_401-label>
                     <fbc_401-label lang="en">Payment case</fbc_401-label>
                     <fbc_51-label lang="is_IS">Einkvæmt númer</fbc_51-label>
                     <fbc_51-label lang="en">Identifier number</fbc_51-label>
                     <fbc_51-required lang="is_IS">Það þarf að fylla út reitinn X</fbc_51-required>
                     <fbc_51-required lang="en">Required</fbc_51-required>
+                    <fbc_19-help lang="is_IS"/>
+                    <fbc_401-help lang="is_IS"/>
                 </localized_strings>
             </xf:instance>
             <xf:instance id="locale-instance" relevant="false()" src="context:fb-afk-loginSession.currentLocale"/>
@@ -312,6 +313,9 @@
                                 <xf:label ref="itemLabel"/>
                                 <xf:value ref="itemValue"/>
                             </xf:itemset>
+                            <xf:help>
+                                <xf:output ref="instance('localized_strings')/fbc_19-help[@lang=instance('localized_strings')/current_language]"/>
+                            </xf:help>
                         </xf:select1>
                         <xf:select1 appearance="full"
                             bind="fbc_401_bind" id="fbc_401" type="fbc_single_select">
@@ -320,6 +324,9 @@
                                 <xf:label ref="itemLabel"/>
                                 <xf:value ref="itemValue"/>
                             </xf:itemset>
+                            <xf:help>
+                                <xf:output ref="instance('localized_strings')/fbc_401-help[@lang=instance('localized_strings')/current_language]"/>
+                            </xf:help>
                         </xf:select1>
                         <xf:input bind="fbc_15_bind" id="fbc_15" type="fbc_date">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_15-label[@lang=instance('localized_strings')/current_language]"/>
