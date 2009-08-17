@@ -22,6 +22,7 @@ import com.idega.block.process.data.Case;
 import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.user.data.User;
+import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 
@@ -76,7 +77,11 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 		
 		Timestamp lastDayForQuestions = (Timestamp) o;		
 		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-		return !currentTime.after(lastDayForQuestions);
+		boolean useUploader = !currentTime.after(lastDayForQuestions);
+		if (!useUploader) {
+			LOGGER.info("Documents can not be added anymore! Deadline was: " + new IWTimestamp(lastDayForQuestions));
+		}
+		return useUploader;
 	}
 
 	@Override
