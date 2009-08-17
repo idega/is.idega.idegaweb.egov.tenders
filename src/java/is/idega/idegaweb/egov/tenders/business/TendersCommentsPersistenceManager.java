@@ -64,6 +64,11 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 			return false;
 		}
 		
+		if (hasFullRightsForComments(piw.getProcessInstanceId())) {
+			//	Handlers has right
+			return true;
+		}
+		
 		Object o = null;
 		try {
 			o = taskInstanceW.getVariable(TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE);
@@ -82,6 +87,11 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 			LOGGER.info("Documents can not be added anymore! Deadline was: " + new IWTimestamp(lastDayForQuestions));
 		}
 		return useUploader;
+	}
+
+	@Override
+	public boolean canWriteComments(CommentsViewerProperties properties) {
+		return hasFullRightsForComments(properties.getIdentifier()) || useFilesUploader(properties);
 	}
 
 	@Override
