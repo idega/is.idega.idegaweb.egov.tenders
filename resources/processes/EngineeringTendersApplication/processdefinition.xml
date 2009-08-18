@@ -53,7 +53,7 @@
                                 {roleName: "bpm_engineering_tenders_handler", accesses: {access: [modifyPermissions, caseHandler]}},
                                 {roleName: "bpm_engineering_tenders_handler", accesses: {access: [seeContacts]}, rolesContacts: {string: ["all"]}},
                                 {roleName: "bpm_engineering_tenders_owner", accesses: {access: [seeContacts]}, rolesContacts: {string: ["bpm_engineering_tenders_caseHandler"]}},
-                                {roleName: "bpm_engineering_tenders_invited", accesses: {access: [seeComments, writeComments]}, rolesComments: {string: ["all"]}}
+                                {roleName: "bpm_engineering_tenders_invited", accesses: {access: [seeContacts, seeComments, writeComments]}, rolesContacts: {string: ["bpm_engineering_tenders_caseHandler"]}, rolesComments: {string: ["all"]}}
                             ]} }}
                         </value>
                 </entry>
