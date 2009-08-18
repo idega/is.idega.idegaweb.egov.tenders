@@ -4,6 +4,7 @@ import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.TenderApplicationData;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jbpm.graph.def.ActionHandler;
@@ -14,6 +15,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import com.idega.block.process.variables.Variable;
 import com.idega.block.process.variables.VariableDataType;
+import com.idega.idegaweb.IWMainApplication;
+import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
 import com.idega.jbpm.exe.TaskInstanceW;
@@ -56,8 +59,11 @@ public class TenderApplicationHandler implements ActionHandler {
 			return;
 		}
 
-		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -7);
-		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(), -4);
+		IWMainApplicationSettings settings = IWMainApplication.getDefaultIWMainApplication().getSettings();
+		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(),
+				settings.getProperty("tndr_time_frame_make_questions", String.valueOf(7)));
+		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(),
+				settings.getProperty("tndr_time_frame_answer_questions", String.valueOf(4)));
 		
 		if (data.isPaymentCase()) {
 			if (!getTendersHelper().disableToSeeAllAttachmentsForNonPayers(currentTask)) {
@@ -67,11 +73,18 @@ public class TenderApplicationHandler implements ActionHandler {
 		}
 	}
 	
-	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, int change) {
+	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, String change) {
+		int realChange = 0;
+		try {
+			realChange = Integer.valueOf(change);
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Invalid number: " + change, e);
+		}
+		
 		Variable dateVariable = new Variable(name, VariableDataType.DATE);
 		
 		IWTimestamp changedTime = new IWTimestamp(value.getTime());
-		changedTime.setDay(changedTime.getDay() + change);
+		changedTime.setDay(changedTime.getDay() - realChange);
 		changedTime.setHour(23);
 		changedTime.setMinute(59);
 		changedTime.setSecond(59);
