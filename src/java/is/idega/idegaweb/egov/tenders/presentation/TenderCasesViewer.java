@@ -3,8 +3,10 @@ package is.idega.idegaweb.egov.tenders.presentation;
 import is.idega.idegaweb.egov.cases.presentation.OpenCases;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
+
 import java.util.Collection;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,6 +24,7 @@ import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.PresentationUtil;
+import com.idega.util.StringUtil;
 import com.idega.util.URIUtil;
 import com.idega.util.expression.ELUtil;
 
@@ -41,7 +44,11 @@ public class TenderCasesViewer extends OpenCases {
 	@Override
 	protected void present(IWContext iwc) throws Exception {
 		ELUtil.getInstance().autowire(this);
+		
+		userPages = new HashMap<String, String>();
 	}
+	
+	private Map<String, String> userPages = null;
 	
 	@Override
 	protected void display(IWContext iwc) throws Exception {
@@ -100,13 +107,19 @@ public class TenderCasesViewer extends OpenCases {
 	}
 
 	private String getUri(IWContext iwc, String pageType, String caseId, Integer viewType) {
-		String url = null;
-		try {
-			url = BuilderLogic.getInstance().getFullPageUrlByPageType(iwc, pageType, true);
-		} catch(Exception e) {}
-		if (url == null) {
-			Logger.getLogger(getClass().getName()).warning("Didn't find page by type: " + pageType);
-			return CoreConstants.EMPTY;
+		String userId = iwc.isLoggedOn() ? iwc.getCurrentUser().getId() : String.valueOf(-1);
+		
+		String key = userId + pageType;
+		String url = userPages.get(key);
+		if (StringUtil.isEmpty(url)) {
+			try {
+				url = BuilderLogic.getInstance().getFullPageUrlByPageType(iwc, pageType, true);
+			} catch(Exception e) {}
+			if (url == null) {
+				return CoreConstants.EMPTY;
+			}
+			
+			userPages.put(key, url);
 		}
 		
 		URIUtil uriUtil = new URIUtil(url);
