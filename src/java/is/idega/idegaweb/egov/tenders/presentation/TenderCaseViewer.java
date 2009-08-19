@@ -79,21 +79,30 @@ public class TenderCaseViewer extends BasicTenderViewer {
 			buttons.add(back);
 			
 			if (iwc.isLoggedOn()) {
-				PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, Arrays.asList(
-						CoreConstants.DWR_ENGINE_SCRIPT,
-						"/dwr/interface/"+ TendersSubscriber.DWR_OBJECT +".js",
-						getBundle(iwc).getVirtualPathWithFileNameString("javascript/TendersHelper.js"),
-						getJQuery().getBundleURIToJQueryLib(),
-						getWeb2().getBundleUriToHumanizedMessagesScript()
-				));
-				PresentationUtil.addStyleSheetToHeader(iwc, getWeb2().getBundleUriToHumanizedMessagesStyleSheet());
+				GenericButton actionButton = null;
 				
-				GenericButton subscribe = new GenericButton("subscribe", iwrb.getLocalizedString("tender_cases.subscribe_to_case", "Subscribe to case"));
-				buttons.add(subscribe);
-				subscribe.setOnClick(new StringBuilder("TendersHelper.subscribe('").append(iwrb.getLocalizedString("subscribing", "Subscribing...")).append("', '")
-						.append(casePK.toString()).append("', '").append(iwrb.getLocalizedString("loading", "Loading...")).append("', ")
-						.append(caseInfo.getProcessInstanceId()).append(");")
-				.toString());
+				if (iwc.hasRole(TendersConstants.TENDER_CASES_HANDLER_ROLE)) {
+					actionButton = new GenericButton("viewCase", iwrb.getLocalizedString("tender_cases.view_case", "View case"));
+					actionButton.setOnClick(new StringBuilder("window.location.href='")
+						.append(getTendersHelper().getLinkToSubscribedCase(iwc, iwc.getCurrentUser(), casePK.toString())).append("';").toString());
+				} else {
+					PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, Arrays.asList(
+							CoreConstants.DWR_ENGINE_SCRIPT,
+							"/dwr/interface/"+ TendersSubscriber.DWR_OBJECT +".js",
+							getBundle(iwc).getVirtualPathWithFileNameString("javascript/TendersHelper.js"),
+							getJQuery().getBundleURIToJQueryLib(),
+							getWeb2().getBundleUriToHumanizedMessagesScript()
+					));
+					PresentationUtil.addStyleSheetToHeader(iwc, getWeb2().getBundleUriToHumanizedMessagesStyleSheet());
+					
+					actionButton = new GenericButton("subscribe", iwrb.getLocalizedString("tender_cases.subscribe_to_case", "Subscribe to case"));
+					actionButton.setOnClick(new StringBuilder("TendersHelper.subscribe('").append(iwrb.getLocalizedString("subscribing", "Subscribing..."))
+							.append("', '").append(casePK.toString()).append("', '").append(iwrb.getLocalizedString("loading", "Loading...")).append("', ")
+							.append(caseInfo.getProcessInstanceId()).append(");")
+					.toString());
+				}
+
+				buttons.add(actionButton);
 			}
 		}
 	}
