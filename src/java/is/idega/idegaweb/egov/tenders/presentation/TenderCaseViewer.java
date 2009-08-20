@@ -14,16 +14,18 @@ import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.CSSSpacer;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
+import com.idega.presentation.Span;
 import com.idega.presentation.text.Heading1;
 import com.idega.presentation.ui.BackButton;
 import com.idega.presentation.ui.Form;
 import com.idega.presentation.ui.GenericButton;
 import com.idega.presentation.ui.InterfaceObject;
 import com.idega.presentation.ui.Label;
-import com.idega.presentation.ui.TextArea;
 import com.idega.presentation.ui.TextInput;
 import com.idega.util.CoreConstants;
 import com.idega.util.PresentationUtil;
+import com.idega.util.StringUtil;
+import com.idega.util.text.TextSoap;
 
 public class TenderCaseViewer extends BasicTenderViewer {
 	
@@ -108,10 +110,24 @@ public class TenderCaseViewer extends BasicTenderViewer {
 	}
 	
 	private Layer getLabelAntTextArea(String labelText, String textAreaValue) {
-		TextArea textArea = new TextArea("jobDescription", textAreaValue);
-		textArea.setDisabled(true);
+		Span description = new Span();
 		
-		return getLabelAndInput(labelText, textArea);
+		if (!StringUtil.isEmpty(textAreaValue)) {
+			textAreaValue = TextSoap.formatText(textAreaValue);
+		}
+		description.addText(textAreaValue);
+		
+		Label label = new Label();
+		label.add(labelText);
+		label.setFor(description.getId());
+		
+		Layer container = new Layer();
+		container.setStyleClass("formItem");
+		container.add(label);
+		container.add(description);
+		container.add(new CSSSpacer());
+		
+		return container;
 	}
 	
 	private Layer getLabelAndInput(String labelText, String inputValue) {
