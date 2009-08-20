@@ -36,9 +36,32 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 	@Autowired
 	private TendersHelper tendersHelper;
 	
+	@Transactional(readOnly = true)
+	private boolean checkDeadlineForVariable(TaskInstanceW taskInstanceW, String variable) {
+		Object o = null;
+		try {
+			o = taskInstanceW.getVariable(variable);
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting variable: " + variable + " from task: " + taskInstanceW.getTaskInstanceId(), e);
+		}
+		if (!(o instanceof Timestamp)) {
+			LOGGER.warning("Expected Timestamp object, got: " + o + " for variable: " + variable);
+			return false;
+		}
+		
+		Timestamp deadline = (Timestamp) o;		
+		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+		boolean stillOntime = !currentTime.after(deadline);
+		if (!stillOntime) {
+			LOGGER.info("Deadline reached! Last date was: " + new IWTimestamp(deadline));
+			return Boolean.FALSE;
+		}
+		return stillOntime;
+	}
+	
 	@Override
 	@Transactional(readOnly = true)
-	public boolean useFilesUploader(CommentsViewerProperties properties) {
+	public boolean isCommentsCreationEnabled(CommentsViewerProperties properties) {
 		if (properties == null) {
 			return false;
 		}
@@ -65,33 +88,15 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 		}
 		
 		if (hasFullRightsForComments(piw.getProcessInstanceId())) {
-			//	Handlers has right
-			return true;
+			return checkDeadlineForVariable(taskInstanceW, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE);
 		}
 		
-		Object o = null;
-		try {
-			o = taskInstanceW.getVariable(TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE);
-		} catch(Exception e) {
-			LOGGER.log(Level.WARNING, "Error getting variable: " + TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE + " from task: " +
-					taskInstanceW.getTaskInstanceId(), e);
-		}
-		if (!(o instanceof Timestamp)) {
-			return false;
-		}
-		
-		Timestamp lastDayForQuestions = (Timestamp) o;		
-		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-		boolean useUploader = !currentTime.after(lastDayForQuestions);
-		if (!useUploader) {
-			LOGGER.info("Documents can not be added anymore! Deadline was: " + new IWTimestamp(lastDayForQuestions));
-		}
-		return useUploader;
+		return checkDeadlineForVariable(taskInstanceW, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE);
 	}
 
 	@Override
 	public boolean canWriteComments(CommentsViewerProperties properties) {
-		return hasFullRightsForComments(properties.getIdentifier()) || useFilesUploader(properties);
+		return isCommentsCreationEnabled(properties);
 	}
 
 	@Override
@@ -110,7 +115,7 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 			return commentId;	//	Comment's attachment wasn't attached to process
 		}
 		
-		ProcessInstanceW processInstance = getTendersHelper().getProcessInstance(Long.valueOf(properties.getIdentifier()));
+		ProcessInstanceW processInstance = getTendersHelper().getProcessInstanceW(Long.valueOf(properties.getIdentifier()));
 	
 		TaskInstanceW taskInstance = getSubmittedTaskInstance(processInstance, getTaskNameForAttachments());
 		Object paymentVariable = taskInstance.getVariable(TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE);
