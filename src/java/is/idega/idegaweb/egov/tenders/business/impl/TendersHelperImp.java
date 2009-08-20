@@ -1,5 +1,6 @@
 package is.idega.idegaweb.egov.tenders.business.impl;
 
+import is.idega.idegaweb.egov.bpm.cases.presentation.UICasesBPMAssets;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 import is.idega.idegaweb.egov.tenders.business.TendersCommentsPersistenceManager;
@@ -433,6 +434,7 @@ public class TendersHelperImp implements TendersHelper {
 		URIUtil uriUtil = new URIUtil(uri);
 		uriUtil.setParameter(ProcessManagerBind.processInstanceIdParam, processInstanceId.toString());
 		uriUtil.setParameter(CasesRetrievalManager.COMMENTS_PERSISTENCE_MANAGER_IDENTIFIER, TendersCommentsPersistenceManager.BEAN_IDENTIFIER);
+		uriUtil.setParameter(UICasesBPMAssets.AUTO_SHOW_COMMENTS, Boolean.TRUE.toString());
 		
 		return uriUtil.getUri();
 	}
