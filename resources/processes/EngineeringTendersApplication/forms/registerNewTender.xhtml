@@ -10,16 +10,18 @@
         <xf:model id="submission_model" schema="#fb-schema">
             <xf:instance id="data-instance" xmlns="">
                 <data>
-                    <form_id>84</form_id>
-                    <Identifier_number_fbc_51 mapping="string_caseIdentifier" nodeType="formIdentifier"/>
-                    
+                    <form_id>134</form_id>
+                    <Identifier_number_fbc_51
+                        mapping="string_caseIdentifier" nodeType="formIdentifier"/>
                     <Tender_name_fbc_10 mapping="string_caseDescription"/>
                     <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
                     <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
                     <Case_is_private_fbc_19 mapping="string_caseIsPrivate"/>
                     <Payment_case_fbc_401 mapping="string_paymentCase"/>
-                    <When_the_tender_should_be_displayed_fbc_15 xsi:nil="true" mapping="date_whenTheTenderShouldBeDisplayed"/>
-                    <The_last_day_to_send_in_bids_fbc_17 xsi:nil="true" mapping="date_lastDayToSendBids"/>
+                    <When_the_tender_should_be_displayed_fbc_15
+                        mapping="date_whenTheTenderShouldBeDisplayed" xsi:nil="true"/>
+                    <The_last_day_to_send_in_bids_fbc_17
+                        mapping="date_lastDayToSendBids" xsi:nil="true"/>
                     <Attachments_fbc_18 mapping="files_tenderApplicationFiles">
                         <group/>
                         <entry filename="" mediatype="">
@@ -29,7 +31,6 @@
                             <description/>
                         </entry>
                     </Attachments_fbc_18>
-                    
                     <saveFormData>
                         <submissionId/>
                     </saveFormData>
@@ -47,29 +48,31 @@
                 </control>
             </xf:instance>
             <xf:instance id="error-instance" xmlns="">
-                 <data>
+                <data>
                     <error for=""/>
                     <sendLinkError for=""/>
                 </data>
             </xf:instance>
             <xf:instance id="saveForm-instance">
                 <data xmlns="">
-              	  <sendLinkEmail xsi:nil="true"/>
+                    <sendLinkEmail xsi:nil="true"/>
                     <link/>
                     <savePhase>false</savePhase>
                 </data>
             </xf:instance>
-			<xf:bind id="errorsGroup" idega:shared="true"
+            <xf:bind id="errorsGroup" idega:shared="true"
                 nodeset="instance('error-instance')/error" relevant="instance('control-instance')/submission = 'true' and instance('saveForm-instance')/savePhase != 'true' and count-non-empty(instance('error-instance')/error)!=0"/>
             <xf:bind id="errors" idega:shared="true" nodeset="instance('error-instance')/error[. != '']"/>
             <xf:bind id="bind-submissionButton" idega:shared="true"
                 nodeset="instance('control-instance')/submissionButton" relevant="instance('control-instance')/readonly != 'true' and instance('control-instance')/generatePdf != 'true'"/>
-            
-            <xf:submission action="xformsBPM:/nouri" id="submit_data_submission" method="post" ref="instance('data-instance')" replace="none">
-                <idega:saveForm action="submissionComplete" ev:event="xforms-submit-done" instanceId="data-instance" submissionId="instance('data-instance')/saveFormData/submissionId"/>
+            <xf:submission action="xformsBPM:/nouri"
+                id="submit_data_submission" method="post"
+                ref="instance('data-instance')" replace="none">
+                <idega:saveForm action="submissionComplete"
+                    ev:event="xforms-submit-done"
+                    instanceId="data-instance" submissionId="instance('data-instance')/saveFormData/submissionId"/>
                 <idega:toggle case="fbc_4" ev:event="xforms-submit-done"/>
             </xf:submission>
-            
             <xf:action ev:event="xforms-submit-error" id="submission-error">
                 <xf:dispatch name="idega-submit-error" target="idega-submission-error"/>
             </xf:action>
@@ -100,8 +103,7 @@
                 <xf:bind id="fbc_18_bind-entries"
                     nodeset="../entry[position() != last()]" type="xs:anyURI"/>
             </xf:bind>
-            <xf:bind id="fbc_51_bind"
-                nodeset="Identifier_number_fbc_51"
+            <xf:bind id="fbc_51_bind" nodeset="Identifier_number_fbc_51"
                 required="instance('control-instance')/required = 'true'" type="xs:string"/>
         </xf:model>
         <xf:model id="data_model">
@@ -110,9 +112,9 @@
                     <default_language>en</default_language>
                     <current_language>en</current_language>
                     <form-title lang="en">Register new tender</form-title>
-                    <form-title lang="is_IS">Formið mitt</form-title>
+                    <form-title lang="is_IS">Útboðslýsing</form-title>
                     <page-1-label lang="en"/>
-                    <page-1-label lang="is_IS">Skref x af y</page-1-label>
+                    <page-1-label lang="is_IS"/>
                     <page-2-label lang="en">Form submitted</page-2-label>
                     <page-2-label lang="is_IS">Form sent</page-2-label>
                     <page-1-submit_button-label lang="en">Submit</page-1-submit_button-label>
@@ -127,7 +129,7 @@
                     <save-success_message lang="is_IS">Umsóknin var vistuð og þú getur nálgast hana aftur með hlekknum hér að neðan</save-success_message>
                     <save-success_label lang="en">Saved</save-success_label>
                     <save-success_label lang="is_IS">Saved</save-success_label>
-                    <fbc_9-text lang="is_IS">Umsókn um útboð</fbc_9-text>
+                    <fbc_9-text lang="is_IS">Útboðslýsing</fbc_9-text>
                     <fbc_9-text lang="en">Tender application</fbc_9-text>
                     <fbc_10-label lang="is_IS">Fyrirsögn (heiti útboðs)</fbc_10-label>
                     <fbc_10-label lang="en">Tender name</fbc_10-label>
