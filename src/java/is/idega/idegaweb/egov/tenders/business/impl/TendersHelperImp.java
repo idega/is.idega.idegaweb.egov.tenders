@@ -1,5 +1,7 @@
 package is.idega.idegaweb.egov.tenders.business.impl;
 
+import is.idega.idegaweb.egov.bpm.cases.messages.CaseUserFactory;
+import is.idega.idegaweb.egov.bpm.cases.messages.CaseUserImpl;
 import is.idega.idegaweb.egov.bpm.cases.presentation.UICasesBPMAssets;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
@@ -38,7 +40,6 @@ import com.idega.block.process.data.CaseCodeHome;
 import com.idega.block.process.data.CaseHome;
 import com.idega.block.process.presentation.beans.CasePresentation;
 import com.idega.block.process.presentation.beans.CasePresentationComparator;
-import com.idega.builder.business.BuilderLogicWrapper;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.core.accesscontrol.business.AccessController;
@@ -53,13 +54,11 @@ import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
 import com.idega.jbpm.data.Actor;
 import com.idega.jbpm.data.ActorPermissions;
 import com.idega.jbpm.data.NativeIdentityBind;
-import com.idega.jbpm.data.ProcessManagerBind;
 import com.idega.jbpm.data.NativeIdentityBind.IdentityType;
 import com.idega.jbpm.data.dao.BPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
 import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
-import com.idega.jbpm.identity.BPMUser;
 import com.idega.jbpm.identity.Identity;
 import com.idega.jbpm.identity.Role;
 import com.idega.jbpm.identity.RolesManager;
@@ -94,9 +93,9 @@ public class TendersHelperImp implements TendersHelper {
 	
 	@Autowired
 	private CasesBPMDAO casesDAO;
-	
+
 	@Autowired
-	private BuilderLogicWrapper builderLorgicWrapper;
+	private CaseUserFactory caseUserFactory;
 	
 	@Autowired
 	private BPMFactory bpmFactory;
@@ -426,13 +425,11 @@ public class TendersHelperImp implements TendersHelper {
 	}
 
 	public String getLinkToSubscribedCase(IWContext iwc, User user, Long processInstanceId) {
-		String uri = builderLorgicWrapper.getBuilderService(iwc).getFullPageUrlByPageType(user, iwc, BPMUser.defaultAssetsViewPageType, true);
-		if (StringUtil.isEmpty(uri)) {
-			return null;
-		}
+		ProcessInstanceW piw = getProcessInstanceW(processInstanceId);
+		CaseUserImpl caseUser = caseUserFactory.getCaseUser(user, piw);
+		String uri = caseUser.getUrlToTheCase();
 		
 		URIUtil uriUtil = new URIUtil(uri);
-		uriUtil.setParameter(ProcessManagerBind.processInstanceIdParam, processInstanceId.toString());
 		uriUtil.setParameter(CasesRetrievalManager.COMMENTS_PERSISTENCE_MANAGER_IDENTIFIER, TendersCommentsPersistenceManager.BEAN_IDENTIFIER);
 		uriUtil.setParameter(UICasesBPMAssets.AUTO_SHOW_COMMENTS, Boolean.TRUE.toString());
 		
