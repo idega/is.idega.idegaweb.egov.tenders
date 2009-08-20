@@ -37,7 +37,11 @@ public interface TendersHelper {
 	
 	public String getLinkToSubscribedCase(IWContext iwc, User user, Long processInstanceId);
 	
-	public boolean doSubscribeToCase(IWContext iwc, User user, String caseId);
+	public boolean doSubscribeToCase(IWContext iwc, User user,String caseId);
+	public boolean doSubscribeToCase(IWContext iwc, User user, Case theCase);
+	public boolean doSubscribeToCase(IWContext iwc, Collection<User> users, Case theCase);
+	
+	public boolean doUnSubscribeFromCase(IWContext iwc, Collection<User> users, Case theCase);
 	
 	public boolean canManageCaseSubscribers(User user);
 	
@@ -51,12 +55,16 @@ public interface TendersHelper {
 	
 	public boolean disableToSeeAllAttachmentsForUser(ProcessInstanceW processInstance, User user);
 	
-	public ProcessInstanceW getProcessInstance(String caseId);
-	public ProcessInstanceW getProcessInstance(Long processInstanceId);
+	public ProcessInstanceW getProcessInstanceW(String caseId);
+	public ProcessInstanceW getProcessInstanceW(Long processInstanceId);
 	
 	public Case getCase(Long processInstanceId);
 	
 	public Collection<User> getPayers(String caseId);
 	
 	public String getMetaDataKey(String caseId);
+	
+	public boolean removePayers(Collection<User> users, String caseId);
+	
+	public boolean setPayers(Collection<User> users, String caseId);
 }

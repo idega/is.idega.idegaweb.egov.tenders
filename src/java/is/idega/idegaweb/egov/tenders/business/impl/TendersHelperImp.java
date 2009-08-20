@@ -49,13 +49,17 @@ import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
+import com.idega.jbpm.data.Actor;
 import com.idega.jbpm.data.ActorPermissions;
+import com.idega.jbpm.data.NativeIdentityBind;
 import com.idega.jbpm.data.ProcessManagerBind;
+import com.idega.jbpm.data.NativeIdentityBind.IdentityType;
 import com.idega.jbpm.data.dao.BPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
 import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.jbpm.identity.BPMUser;
+import com.idega.jbpm.identity.Identity;
 import com.idega.jbpm.identity.Role;
 import com.idega.jbpm.identity.RolesManager;
 import com.idega.jbpm.identity.permission.Access;
@@ -79,6 +83,7 @@ import com.idega.util.expression.ELUtil;
  */
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
+@Transactional(readOnly = true)
 public class TendersHelperImp implements TendersHelper {
 
 	private static final Logger LOGGER = Logger.getLogger(TendersHelperImp.class.getName());
@@ -97,9 +102,6 @@ public class TendersHelperImp implements TendersHelper {
 	
 	@Autowired
 	private BPMDAO bpmDAO;
-	
-	@Autowired
-	private RolesManager rolesManager;
 	
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow) {
 		CaseHome caseHome = null;
@@ -435,25 +437,110 @@ public class TendersHelperImp implements TendersHelper {
 		return uriUtil.getUri();
 	}
 
+	public boolean doSubscribeToCase(IWContext iwc, Collection<User> users, Case theCase) {
+		try {
+			ProcessInstance pi = getProcessInstance(theCase.getId());
+			
+			for (User user: users) {
+				if (!setAccessForUserPerProcess(user, pi, Boolean.FALSE)) {
+					return false;
+				}
+				
+				theCase.addSubscriber(user);
+			}
+			theCase.store();
+			return true;
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error subscribing to case: " + theCase + ", for users: " + users, e);
+		}
+		
+		return false;
+	}
+	
+	public boolean doSubscribeToCase(IWContext iwc, User user, Case theCase) {
+		if (user == null || theCase == null) {
+			return false;
+		}
+		
+		return doSubscribeToCase(iwc, Arrays.asList(user), theCase);
+	}
+	
 	public boolean doSubscribeToCase(IWContext iwc, User user, String caseId) {
-		if (user == null || StringUtil.isEmpty(caseId)) {
+		if (StringUtil.isEmpty(caseId)) {
+			return false;
+		}
+		
+		CaseBusiness caseBusiness = getCaseBusiness(iwc);
+		try {
+			return doSubscribeToCase(iwc, user, caseBusiness.getCase(caseId));
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Error subscribing to case: " + caseId + ", for user: " + user, e);
+		}
+		
+		return false;
+	}
+	
+	public boolean doUnSubscribeFromCase(IWContext iwc, Collection<User> users, Case theCase) {
+		if (ListUtil.isEmpty(users)) {
 			return false;
 		}
 		
 		try {
-			CaseBusiness caseBusiness = getCaseBusiness(iwc);
-			if (caseBusiness == null) {
-				return false;
+			String caseId = theCase.getId();
+			ProcessInstanceW piw = getProcessInstanceW(caseId);
+			ProcessInstance pi = piw.getProcessInstance();
+			AccessController accessControler = iwc.getAccessController();
+			for (User user: users) {
+				if (!setAccessForUserPerProcess(user, pi, Boolean.TRUE)) {
+					return false;
+				}
+			
+				theCase.removeSubscriber(user);
+				accessControler.removeRoleFromGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, user, iwc);
+			}
+			theCase.store();
+			
+			removePayers(users, piw, caseId);
+			
+			return true;
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error unsubscribing from case: " + theCase + ", for users: " + users, e);
+		}
+		
+		return false;
+	}
+	
+	private boolean setAccessForUserPerProcess(User user, ProcessInstance pi, boolean remove) {
+		if (user == null || pi == null) {
+			LOGGER.warning("User or process instance is null!");
+			return false;
+		}
+		
+		Long piId = pi.getId();
+		try {
+			String userId = user.getId();
+			
+			Identity identity = new Identity(userId, IdentityType.USER);
+			
+			List<Actor> actors = getUserActors(userId, piId);
+			
+			RolesManager rolesManager = getBpmFactory().getRolesManager();
+			if (remove) {
+				return removeIdentities(actors, userId);
+			} else {
+				Role invitedRole = new Role(TendersConstants.TENDER_CASES_INVITED_ROLE, Access.read);
+				invitedRole.setIdentities(Arrays.asList(new Identity(userId, IdentityType.USER)));
+				Collection<Role> roles = Arrays.asList(invitedRole);
+				
+				if (ListUtil.isEmpty(actors)) {
+					rolesManager.createProcessActors(roles, pi);
+				}
+				rolesManager.createIdentitiesForRoles(roles, identity, piId);
 			}
 			
-			if (caseBusiness.addSubscriber(caseId, user)) {
-				if (!iwc.getAccessController().hasRole(user, TendersConstants.TENDER_CASES_INVITED_ROLE)) {
-					iwc.getAccessController().addRoleToGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, user, iwc);
-				}
-				return true;
-			}
-		} catch(Exception e) {
-			LOGGER.log(Level.WARNING, "Error subscribing to case: " + caseId + ", for user: " + user, e);
+			return true;
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error setting accesses '" + Access.read + "' for user: " + user + " for process: " + pi, e);
 		}
 		
 		return false;
@@ -667,7 +754,7 @@ public class TendersHelperImp implements TendersHelper {
 		return accesses;
 	}
 
-	public ProcessInstanceW getProcessInstance(String caseId) {
+	public ProcessInstanceW getProcessInstanceW(String caseId) {
 		if (StringUtil.isEmpty(caseId)) {
 			return null;
 		}
@@ -682,8 +769,20 @@ public class TendersHelperImp implements TendersHelper {
 			return null;
 		}
 		
-		Long processInstanceId = bind.getProcInstId();
-		return getBpmFactory().getProcessManagerByProcessInstanceId(processInstanceId).getProcessInstance(processInstanceId);
+		return getProcessInstanceW(bind.getProcInstId());
+	}
+	
+	private ProcessInstance getProcessInstance(String caseId) {
+		return getProcessInstance(getProcessInstanceW(caseId).getProcessInstanceId());
+	}
+	
+	private ProcessInstance getProcessInstance(final Long processInstanceId) {
+		try {
+			return getBpmFactory().getProcessInstanceW(processInstanceId).getProcessInstance();
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting process instance by id: " + processInstanceId);
+		}
+		return null;
 	}
 
 	public BPMDAO getBpmDAO() {
@@ -692,14 +791,6 @@ public class TendersHelperImp implements TendersHelper {
 
 	public void setBpmDAO(BPMDAO bpmDAO) {
 		this.bpmDAO = bpmDAO;
-	}
-
-	public RolesManager getRolesManager() {
-		return rolesManager;
-	}
-
-	public void setRolesManager(RolesManager rolesManager) {
-		this.rolesManager = rolesManager;
 	}
 
 	public Case getCase(Long processInstanceId) {
@@ -750,8 +841,125 @@ public class TendersHelperImp implements TendersHelper {
 		return new StringBuilder(TendersConstants.USER_HAS_PAYED_FOR_TENDER_CASE_ATTACHMENTS_META_DATA_KEY).append(caseId).toString();
 	}
 
-	public ProcessInstanceW getProcessInstance(Long processInstanceId) {
+	public ProcessInstanceW getProcessInstanceW(Long processInstanceId) {
 		return getBpmFactory().getProcessManagerByProcessInstanceId(processInstanceId).getProcessInstance(processInstanceId);
 	}
 	
+	@Transactional(readOnly = true)
+	private List<Actor> getUserActors(String userId, Long processInstanceId) {
+		List<Actor> actors = null;
+		try {	
+			actors = getBpmDAO().getResultList(Actor.getActorsByUserIdentityAndProcessInstanceId, Actor.class,
+				    new Param(Actor.processInstanceIdProperty, processInstanceId),
+				    new Param(NativeIdentityBind.identityTypeProperty, IdentityType.USER),
+				    new Param(NativeIdentityBind.identityIdProperty, userId)
+			);
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting actors for user: " + userId + " and process instance: " + processInstanceId);
+		}
+		return actors;
+	}
+	
+	@Transactional(readOnly = false)
+	private boolean removeIdentities(List<Actor> actors, String userId) {
+		if (ListUtil.isEmpty(actors)) {
+			LOGGER.warning("There are no 'permissions' for user: " + userId);
+			return true;
+		}
+		
+		List<Long> ids = new ArrayList<Long>();
+		for (Actor actor: actors) {			
+			Long id = actor.getActorId();
+			if (!ids.contains(id)) {
+				ids.add(id);
+			}
+		}
+		
+		List<NativeIdentityBind> identities = null;
+		try {
+			identities = getBpmDAO().getNativeIdentities(ids, IdentityType.USER);
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error getting identities for user: " + userId, e);
+			return false;
+		}
+		if (ListUtil.isEmpty(identities)) {
+			LOGGER.warning("There are no 'permissions' for user: " + userId);
+			return true;
+		}
+		
+		List<Long> idsToRemove = new ArrayList<Long>();
+		for (NativeIdentityBind identity: identities) {
+			if (userId.equals(identity.getIdentityId()) && !idsToRemove.contains(identity.getId())) {
+				idsToRemove.add(identity.getId());
+			}
+		}
+		
+		if (ListUtil.isEmpty(idsToRemove)) {
+			LOGGER.warning("There are no 'permissions' for user: " + userId);
+			return true;
+		}
+		
+		try {
+			getBpmDAO().createNamedQuery(NativeIdentityBind.deleteByIds).setParameter(NativeIdentityBind.idsParam, idsToRemove).executeUpdate();
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error removing identities: " + idsToRemove + " for user: " + userId, e);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public boolean removePayers(Collection<User> users, String caseId) {
+		return removePayers(users, getProcessInstanceW(caseId), caseId);
+	}
+	
+	private boolean removePayers(Collection<User> users, ProcessInstanceW processInstance, String caseId) {
+		if (ListUtil.isEmpty(users) || processInstance == null || StringUtil.isEmpty(caseId)) {
+			return false;
+		}
+		
+		try {
+			String metaDataKey = getMetaDataKey(caseId);
+			for (User payer: users) {
+				String metaData = payer.getMetaData(metaDataKey);
+				if (!StringUtil.isEmpty(metaData) && Boolean.TRUE.toString().equals(metaData)) {
+					if (!disableToSeeAllAttachmentsForUser(processInstance, payer)) {
+						return false;
+					}
+					
+					payer.removeMetaData(metaDataKey);
+					payer.store();
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error removing payers: " + users + " for case: " + caseId, e);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public boolean setPayers(Collection<User> users, String caseId) {
+		if (ListUtil.isEmpty(users) || StringUtil.isEmpty(caseId)) {
+			return false;
+		}
+		
+		try {
+			String metaDataKey = getMetaDataKey(caseId);
+			ProcessInstanceW processInstance = getProcessInstanceW(caseId);
+			for (User newPayer: users) {
+				newPayer.setMetaData(metaDataKey, Boolean.TRUE.toString());
+				newPayer.store();
+				
+				if (!enableToSeeAllAttachmentsForUser(processInstance, newPayer)) {
+					return false;
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Error setting payers: " + users + " for case: " + caseId, e);
+			return false;
+		}
+		
+		return true;
+	}
 }
