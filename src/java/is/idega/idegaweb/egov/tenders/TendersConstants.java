@@ -35,6 +35,7 @@ public class TendersConstants {
 	public static final String TENDER_CASES_HANDLER_ROLE = "bpm_engineering_tenders_handler";
 	public static final String TENDER_CASES_OWNER_ROLE = "bpm_engineering_tenders_owner";
 	public static final String TENDER_CASES_INVITED_ROLE = "bpm_engineering_tenders_invited";
+	public static final String TENDERS_ROLE = "tenderusers";
 	
 	public static final List<String> TENDER_CASES_3RD_PARTIES_ROLES = Collections.unmodifiableList(Arrays.asList(
 			TENDER_CASES_OWNER_ROLE,
