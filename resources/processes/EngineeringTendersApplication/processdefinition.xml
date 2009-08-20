@@ -145,47 +145,6 @@
 		</event>
 		<transition to="fork3"></transition>
    </start-state>
-   <node name="sendHandlerNewCaseArrivedMessage">
-      <event type="node-enter">
-         <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
-				<handlerName>sendCaseMessagesHandler</handlerName>
-				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
-			        <entry>
-			        	<key>inlineSubject</key>
-			        	<value>
-			        		${
-			        		Map subjectMap = new HashMap();
-			        		subjectMap.put("en", "New case has been created");
-			        		subjectMap.put("is_IS", "N\u00FDtt m\u00E1l stofna\u00F0");
-			        		return subjectMap;
-			        		}
-			        		
-                		</value>
-                	</entry>
-                	<entry>
-			        	<key>inlineMessage</key>
-			        	<value>
-			        		${
-			        		Map messageMap = new HashMap();
-			        		messageMap.put("en", "Hello, {0}. New {1} case with identifier {2} and description {3} has been created.");
-			        		messageMap.put("is_IS", "S\u00E6l/ll, {0}. N\u00FDtt m\u00E1l \u00ED flokknum {1} me\u00F0 nafni\u00F0 {3} og m\u00E1lsn\u00FAmeri\u00F0 {2} hefur veri\u00F0 stofna\u00F0.");
-			        		return messageMap;
-			        		}
-                		</value>
-                	</entry>
-                	<entry>
-			        	<key>messageValues</key>
-			        	<value>
-			        		{list: {mv: [{type: "bean", value: "user.name"}, {type: "bean", value: "piw.processDefinitionW.startTaskName"}, {type: "bean", value: "piw.processIdentifier"}, {type: "bean", value: "piw.processDescription"}]}}
-                		</value>
-                	</entry>
-                	<entry><key>sendToRoles</key><value>bpm_engineering_tenders_handler</value></entry>
-			    </propertyMap>
-		 </action>
-        
-      </event>
-		<transition to="fork1"></transition>
-   </node>
    <end-state name="end">
    
    </end-state>
@@ -338,7 +297,8 @@
    </process-state>
    <fork name="fork3">
 		<transition name="toEmailsFetcher" to="emailsFetcher"></transition>
-      <transition to="handlerAssignsOwner" name="toHandlerAssignsOwner"></transition>
+		<transition to="editTender" name="toEditTender"></transition>
+		<transition to="completeProcess" name="to completeProcess"></transition>
    </fork>
    <task-node name="completeProcess">
 		<task name="Complete process">
@@ -363,149 +323,6 @@
 		</task>
 		<transition to="endCaseProcess"></transition>
 	</task-node>
-
-	<process-state name="handlerAssignsOwner">
-	  <sub-process name="AssignmentAssist" binding="late" />
-      
-      <variable name="assignmentAssistantRoleExp" access="read" mapped-name="assistantRoleExpression" />
-      <variable name="assignmentAssigneeRoleExp" access="read" mapped-name="assigneeRoleExpression" />
-      <variable name="myProcessInstanceId" access="read" mapped-name="assignFromProcessInstanceId" />
-      <variable name="ownerUserPersonalData" access="read" mapped-name="assigneeData" />
-      
-      <event type="node-enter">
-         <script>
-            <expression>
-                s_processInstanceId = token.getProcessInstance().getId();
-                
-                s_upd = new com.idega.jbpm.identity.UserPersonalData();
-                s_upd.setUserEmail(userEmailAddress);
-                s_upd.setFullName(userFullName);
-                s_upd.setPersonalId(userPersonalId);
-                s_upd.setUserType("BPM_USER_NATURAL");
-                s_upd.setUserAddress(userAddress);
-                s_upd.setUserPostalCode(userPostalCode);
-                s_upd.setUserMunicipality(userMunicipality);
-                s_upd.setUserPhone(userPhone);
-                s_upd.setHideInContacts(true);
-                s_upd.setGenderName(userGenderName);
-                
-                s_roleExp = "{role: {roleName: \"bpm_engineering_tenders_handler\"}}";
-                s_assigneeRoleExp = "{role: {roleName: \"bpm_engineering_tenders_owner\"}}";
-            </expression>
-            <variable name='myProcessInstanceId' access='write' mapped-name='s_processInstanceId' />
-            <variable name='ownerUserPersonalData' access='write' mapped-name='s_upd' />
-            <variable name='assignmentAssistantRoleExp' access='write' mapped-name='s_roleExp' />
-            <variable name='assignmentAssigneeRoleExp' access='write' mapped-name='s_assigneeRoleExp' />
-            
-            <variable name='string_ownerKennitala' access='read' mapped-name='userPersonalId' />
-            <variable name='string_ownerAddress' access='read' mapped-name='userAddress' />
-            <variable name='string_ownerPostCode' access='read' mapped-name='userPostalCode' />
-            <variable name='string_ownerMunicipality' access='read' mapped-name='userMunicipality' />
-            <variable name='string_ownerPhone' access='read' mapped-name='userPhone' />
-            <variable name='string_ownerFullName' access='read' mapped-name='userFullName' />
-            <variable name='string_ownerEmailAddress' access='read' mapped-name='userEmailAddress' />
-            <variable name='string_ownerGender' access='read' mapped-name='userGenderName' />
-            
-            
-         </script>
-      </event>
-		<transition to="ifHandlerAssigned"></transition>
-	</process-state>
-
-	<process-state name="anonymousOwnerAssignment">
-		<sub-process name="AnonAssignment" binding="late" />
-      
-      <variable name="assignmentAssigneeRoleExp" access="read" mapped-name="assigneeRoleExpression" />
-      <variable name="myProcessInstanceId" access="read" mapped-name="assignFromProcessInstanceId" />
-      <variable name="ownerUserPersonalData" access="read" mapped-name="assigneeData" />
-      
-      <event type="node-enter">
-         <script>
-         <!-- TODO: this exp should be global -->
-            <expression>
-                s_processInstanceId = token.getProcessInstance().getId();
-                
-                s_upd = new com.idega.jbpm.identity.UserPersonalData();
-                s_upd.setUserEmail(userEmailAddress);
-                s_upd.setFullName(userFullName);
-                s_upd.setPersonalId(userPersonalId);
-                s_upd.setUserType("BPM_USER_NATURAL");
-                s_upd.setUserAddress(userAddress);
-                s_upd.setUserPostalCode(userPostalCode);
-                s_upd.setUserMunicipality(userMunicipality);
-                s_upd.setUserPhone(userPhone);
-                s_upd.setGenderName(userGenderName);
-                
-                s_assigneeRoleExp = "{role: {roleName: \"bpm_engineering_tenders_owner\"}}";
-            </expression>
-            <variable name='myProcessInstanceId' access='write' mapped-name='s_processInstanceId' />
-            <variable name='ownerUserPersonalData' access='write' mapped-name='s_upd' />
-            <variable name='assignmentAssigneeRoleExp' access='write' mapped-name='s_assigneeRoleExp' />
-            
-            <variable name='string_ownerKennitala' access='read' mapped-name='userPersonalId' />
-            <variable name='string_ownerAddress' access='read' mapped-name='userAddress' />
-            <variable name='string_ownerPostCode' access='read' mapped-name='userPostalCode' />
-            <variable name='string_ownerMunicipality' access='read' mapped-name='userMunicipality' />
-            <variable name='string_ownerPhone' access='read' mapped-name='userPhone' />
-            <variable name='string_ownerFullName' access='read' mapped-name='userFullName' />
-            <variable name='string_ownerEmailAddress' access='read' mapped-name='userEmailAddress' />
-            <variable name='string_ownerGender' access='read' mapped-name='userGenderName' />
-            
-         </script>
-      </event>
-		<transition to="sendOwnerCaseCreatedMessage" name=""></transition>
-	</process-state>
-
-	<decision name="ifHandlerAssigned" expression="#{handlerAssignedOwner != null &amp;&amp; handlerAssignedOwner}">
-		<transition to="anonymousOwnerAssignment" name="false"></transition>
-		<transition to="sendHandlerNewCaseArrivedMessage" name="true"></transition>
-	</decision>
-
-	<node name="sendOwnerCaseCreatedMessage">
-		<event type="node-enter">
-		  <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
-				<handlerName>sendCaseMessagesHandler</handlerName>
-				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
-			        <entry>
-			        	<key>inlineSubject</key>
-			        	<value>
-			        		${
-			        		Map subjectMap = new HashMap();
-			        		subjectMap.put("en", "Case created successfully!");
-			        		subjectMap.put("is_IS", "\u00DEakka \u00FE\u00E9r fyrir, n\u00FDtt m\u00E1l hefur veri\u00F0 stofna\u00F0 og ver\u00F0ur afgreitt eins flj\u00F3tt og au\u00F0i\u00F0 er.");
-			        		return subjectMap;
-			        		}
-			        		
-                		</value>
-                	</entry>
-                	<entry>
-			        	<key>inlineMessage</key>
-			        	<value>
-			        		${
-			        		Map messageMap = new HashMap();
-			        		messageMap.put("en", "Hello, {0}. You have successfully created case {1} with identifier {2} and description {3}. We are hopeful that your case will be handled soon. Good luck!");
-			        		messageMap.put("is_IS", "S\u00E6l/ll, {0}. \u00DE\u00FA hefur n\u00FA send inn ums\u00F3kn \u00ED flokknum {1} me\u00F0 m\u00E1lsn\u00FAmeri\u00F0 \"{2}\" og nafni\u00F0 \"{3}\" . M\u00E1l \u00FEitt ver\u00F0ur afgreitt eins flj\u00F3tt og au\u00F0i\u00F0 er.");
-			        		return messageMap;
-			        		}
-                		</value>
-                	</entry>
-                	<entry>
-			        	<key>messageValues</key>
-			        	<value>
-			        		{list: {mv: [{type: "bean", value: "user.name"}, {type: "bean", value: "piw.processDefinitionW.startTaskName"}, {type: "bean", value: "piw.processIdentifier"}, {type: "bean", value: "piw.processDescription"}, {type: "bean", value: "caseUser.urlToTheCase"}]}}
-                		</value>
-                	</entry>
-                	<entry><key>sendToRoles</key><value>bpm_engineering_tenders_owner</value></entry>
-			    </propertyMap>
-		 </action>
-		</event>
-		<transition to="sendHandlerNewCaseArrivedMessage" name=""></transition>
-	</node>
-
-	<fork name="fork1">
-		<transition to="editTender" name="toEditTender"></transition>
-		<transition to="completeProcess" name="to completeProcess"></transition>
-	</fork>
 
 	<task-node name="editTender">
 		<task name="EditTender" priority="-1">
