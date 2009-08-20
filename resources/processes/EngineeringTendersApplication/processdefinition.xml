@@ -186,46 +186,6 @@
       </event>
 		<transition to="fork1"></transition>
    </node>
-   <node name="sendRulingMessages">
-      <event type="node-enter">
-         <action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
-				<handlerName>sendCaseMessagesHandler</handlerName>
-				<propertyMap key-type='java.lang.String' value-type='java.lang.String'>
-			        <entry>
-			        	<key>inlineSubject</key>
-			        	<value>
-			        		${
-			        		Map subjectMap = new HashMap();
-			        		subjectMap.put("en", "Process ruling has been submitted");
-			        		subjectMap.put("is_IS", "Ni\u00F0ursta\u00F0a \u00ED erindi til k\u00E6runefndar");
-			        		return subjectMap;
-			        		}
-			        		
-                		</value>
-                	</entry>
-                	<entry>
-			        	<key>inlineMessage</key>
-			        	<value>
-			        		${
-			        		Map messageMap = new HashMap();
-			        		messageMap.put("en", "Hello, {0}. Process ruling has been submitted for the case {1} and it is now viewable in your case list with identifier {2} and description {3}.");
-			        		messageMap.put("is_IS", "S\u00E6l/ll, {0}. Afgrei\u00F0sla ums\u00F3knar \u00FEinnar me\u00F0 nafni\u00F0 \"{3}\" og m\u00E1lsn\u00FAmeri\u00F0 \"{2}\" er n\u00FA loki\u00F0 og \u00FE\u00FA getur sko\u00F0a\u00F0 ni\u00F0urst\u00F6\u00F0u hennar \u00ED m\u00E1lalistanum \u00FE\u00EDnum \u00E1 Impru e\u00F0a \u00E1 sl\u00F3\u00F0inni {1}.");
-			        		return messageMap;
-			        		}
-                		</value>
-                	</entry>
-                	<entry>
-			        	<key>messageValues</key>
-			        	<value>
-			        		{list: {mv: [{type: "bean", value: "user.name"},  {type: "bean", value: "piw.processDefinitionW.startTaskName"}, {type: "bean", value: "piw.processIdentifier"}, {type: "bean", value: "piw.processDescription"}]}}
-                		</value>
-                	</entry>
-                	<entry><key>sendToRoles</key><value>bpm_engineering_tenders_owner</value></entry>
-			    </propertyMap>
-		 </action>
-      </event>
-		<transition to="completeProcess"></transition>
-   </node>
    <end-state name="end">
    
    </end-state>
@@ -542,22 +502,9 @@
 		<transition to="sendHandlerNewCaseArrivedMessage" name=""></transition>
 	</node>
 
-	<node name="denyProcessRulling">
-		<transition to="sendRulingMessages"></transition>
-	</node>
-
-	<node name="grantProcessRulling">
-		<transition to="sendRulingMessages"></transition>
-	</node>
-
-	<task-node name="submitProcessRuling">
-		<transition to="grantProcessRulling" name="toGrantProcessRulling"></transition>
-		<transition to="denyProcessRulling" name="toDenyProcessRulling"></transition>
-	</task-node>
-
 	<fork name="fork1">
-		<transition to="submitProcessRuling" name="toSubmitProcessRuling"></transition>
 		<transition to="editTender" name="toEditTender"></transition>
+		<transition to="completeProcess" name="to completeProcess"></transition>
 	</fork>
 
 	<task-node name="editTender">

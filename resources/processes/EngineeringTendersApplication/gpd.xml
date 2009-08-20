@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<root-container name="EngineeringTendersApplication" width="1016" height="1202">
+<root-container name="EngineeringTendersApplication" width="1016" height="844">
   <node name="registerNewTender" x="328" y="-144" width="203" height="32">
     <edge>
       <label x="5" y="-10"/>
@@ -11,20 +11,15 @@
       <label x="5" y="-10"/>
     </edge>
   </node>
-  <node name="sendRulingMessages" x="471" y="602" width="140" height="40">
-    <edge>
-      <label x="-54" y="-7"/>
-    </edge>
-  </node>
-  <node name="end" x="525" y="1031" width="24" height="25"/>
+  <node name="end" x="511" y="673" width="24" height="25"/>
   <node name="emailsFetcherEnd" x="755" y="65" width="23" height="23"/>
   <node name="editTenderEnd" x="748" y="441" width="132" height="36"/>
-  <node name="endCaseProcess" x="468" y="822" width="140" height="40">
+  <node name="endCaseProcess" x="452" y="504" width="140" height="40">
     <edge>
       <label x="-30" y="-10"/>
     </edge>
   </node>
-  <node name="endProcess" x="466" y="931" width="140" height="40">
+  <node name="endProcess" x="450" y="597" width="140" height="40">
     <edge>
       <label x="-31" y="-9"/>
     </edge>
@@ -43,7 +38,7 @@
       <label x="-78" y="-14"/>
     </edge>
   </node>
-  <node name="completeProcess" x="463" y="709" width="149" height="46">
+  <node name="completeProcess" x="449" y="406" width="149" height="46">
     <edge>
       <label x="-43" y="-9"/>
     </edge>
@@ -72,27 +67,9 @@
       <label x="-111" y="-18"/>
     </edge>
   </node>
-  <node name="denyProcessRulling" x="581" y="511" width="132" height="36">
-    <edge>
-      <label x="-13" y="-12"/>
-    </edge>
-  </node>
-  <node name="grantProcessRulling" x="355" y="514" width="132" height="36">
-    <edge>
-      <label x="-89" y="-10"/>
-    </edge>
-  </node>
-  <node name="submitProcessRuling" x="438" y="428" width="176" height="40">
-    <edge>
-      <label x="-131" y="-11"/>
-    </edge>
-    <edge>
-      <label x="5" y="-10"/>
-    </edge>
-  </node>
   <node name="fork1" x="511" y="304" width="24" height="21">
     <edge>
-      <label x="-57" y="-4"/>
+      <label x="5" y="-10"/>
     </edge>
     <edge>
       <label x="5" y="-10"/>

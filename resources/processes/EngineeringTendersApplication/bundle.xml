@@ -11,9 +11,6 @@
         <task name="EditTender">
         	<viewResource resourceIdentifier="forms/registerNewTender.xhtml" viewType="xforms" viewResourceType="xforms" />
         </task>
-        <task name="Submit Process Ruling">
-            <viewResource resourceIdentifier="forms/submitProcessRuling.xhtml" viewType="xforms" viewResourceType="xforms" />
-        </task>
         <task name="Complete process">
             <viewResource resourceIdentifier="forms/completeProcess.xhtml" viewType="xforms" viewResourceType="xforms" />
         </task>
