@@ -29,7 +29,9 @@ import com.idega.presentation.ui.SubmitButton;
 import com.idega.user.data.User;
 import com.idega.user.presentation.user.UsersFilter;
 import com.idega.util.ArrayUtil;
+import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
+import com.idega.util.PresentationUtil;
 import com.idega.util.StringUtil;
 
 public class CaseSubscribersManager extends BasicTenderViewer {
@@ -44,6 +46,11 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 	@Override
 	public void main(IWContext iwc) throws Exception {
 		super.main(iwc);
+		
+		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, Arrays.asList(
+				CoreConstants.DWR_UTIL_SCRIPT,
+				getBundle(iwc).getVirtualPathWithFileNameString("javascript/TendersHelper.js")
+		));
 		
 		switch (parseAction(iwc)) {
 			case CasesProcessor.ACTION_VIEW:
@@ -267,7 +274,7 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		return true;
 	}
 	
-	private DropdownMenu getCasesToManage(IWContext iwc) {
+	private DropdownMenu getCasesToManage(IWContext iwc, String formId) {
 		DropdownMenu menu = new DropdownMenu();
 		
 		PagedDataCollection<CasePresentation> cases = getTendersHelper().getAllCases(iwc.getCurrentLocale(), null, null);
@@ -298,8 +305,9 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		
 		setCaseId(caseId);
 		
-		menu.setOnChange(new StringBuilder("this.form['").append(CasesProcessor.PARAMETER_CASE_PK).append("'].value=dwr.util.getValue('")
-				.append(menu.getId()).append("');this.form.submit();").toString());
+		menu.setOnChange("TendersHelper.setSelectedTender('"+formId+"', '"+menu.getId()+"', '"+CasesProcessor.PARAMETER_CASE_PK+"');");
+//		menu.setOnChange(new StringBuilder("this.form['").append(CasesProcessor.PARAMETER_CASE_PK).append("'].value=dwr.util.getValue('")
+//				.append(menu.getId()).append("');this.form.submit();").toString());
 		
 		return menu;
 	}
@@ -317,7 +325,7 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 			form.add(new Heading1(savePayersActionMessage));
 		}
 		
-		DropdownMenu casesMenu = getCasesToManage(iwc);
+		DropdownMenu casesMenu = getCasesToManage(iwc, form.getId());
 		
 		if (StringUtil.isEmpty(getCaseId())) {
 			form.add(new Heading1(iwrb.getLocalizedString("tender_case_manager.there_are_no_valid_cases_available", "There are no valid cases to manage")));

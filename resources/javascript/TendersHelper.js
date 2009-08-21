@@ -25,3 +25,9 @@ TendersHelper.subscribe = function(message, caseId, loadingMessage, processInsta
 		}
 	});
 }
+
+TendersHelper.setSelectedTender = function(formId, dropdownId, hiddenInputName) {
+	var form = document.getElementById(formId); 
+	form[hiddenInputName].value = dwr.util.getValue(dropdownId);
+	form.submit();
+}
