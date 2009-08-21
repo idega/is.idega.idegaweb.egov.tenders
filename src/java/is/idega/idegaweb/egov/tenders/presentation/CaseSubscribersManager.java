@@ -2,6 +2,7 @@ package is.idega.idegaweb.egov.tenders.presentation;
 
 import is.idega.idegaweb.egov.cases.presentation.CasesProcessor;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
+import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -284,18 +285,21 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 			menu.addOption(new SelectOption(theCase.getSubject(), theCase.getId()));
 		}
 		
+		IWResourceBundle iwrb = getResourceBundle(iwc);
+		menu.addFirstOption(new SelectOption(iwrb.getLocalizedString("tender_case_manager.select_tender", "Select tender"), -1));
+		
 		String caseId = null;
 		if (iwc.isParameterSet(CasesProcessor.PARAMETER_CASE_PK)) {
 			caseId = iwc.getParameter(CasesProcessor.PARAMETER_CASE_PK);
+			menu.setSelectedElement(caseId);
 		} else {
-			caseId = cases.getCollection().iterator().next().getId();
+			caseId = String.valueOf(-1);
 		}
 		
-		menu.setSelectedElement(caseId);
 		setCaseId(caseId);
 		
-		menu.setOnChange(new StringBuilder("changeValue(this.form['").append(CasesProcessor.PARAMETER_CASE_PK).append("'], dwr.util.getValue('")
-				.append(menu.getId()).append("'));this.form.submit();").toString());
+		menu.setOnChange(new StringBuilder("this.form['").append(CasesProcessor.PARAMETER_CASE_PK).append("'].value=dwr.util.getValue('")
+				.append(menu.getId()).append("');this.form.submit();").toString());
 		
 		return menu;
 	}
@@ -334,18 +338,21 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		caseViewer.setActAsStandalone(false);
 		caseViewer.setCaseId(getCaseId());
 		form.add(caseViewer);
-		
-		//	Subscribed users
-		addUsersFilter(form, getSubscribersIds(iwc), iwrb.getLocalizedString("tender_case_manager.subscribe_users_to_case", "Set subscribed users"),
-				SUBSCRIBED_USERS_PARAMETER);
-		
-		if (getCaseInfo().isPaymentCase()) {
-			form.addParameter(PAYMENT_CASE, Boolean.TRUE.toString());
+	
+		CasePresentationInfo caseInfo = getCaseInfo();
+		if (caseInfo != null) {
+			//	Subscribed users
+			addUsersFilter(form, getSubscribersIds(iwc), iwrb.getLocalizedString("tender_case_manager.subscribe_users_to_case", "Set subscribed users"),
+					SUBSCRIBED_USERS_PARAMETER);
 			
-			//	Payed for attachments users
-			addUsersFilter(form, getPayersIds(iwc),
-					iwrb.getLocalizedString("tender_case_manager.mark_payed_users_for_attachments", "Mark payed users for the documents"),
-					PAYED_FOR_THE_ATTACHMENTS_USERS_PARAMETER);
+			if (caseInfo.isPaymentCase()) {
+				form.addParameter(PAYMENT_CASE, Boolean.TRUE.toString());
+				
+				//	Payed for attachments users
+				addUsersFilter(form, getPayersIds(iwc),
+						iwrb.getLocalizedString("tender_case_manager.mark_payed_users_for_attachments", "Mark payed users for the documents"),
+						PAYED_FOR_THE_ATTACHMENTS_USERS_PARAMETER);
+			}
 		}
 		
 		//	Buttons
@@ -356,9 +363,11 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		BackButton back = new BackButton(iwrb.getLocalizedString("tender_cases.back", "Back"));
 		buttons.add(back);
 		
-		SubmitButton save = new SubmitButton(iwrb.getLocalizedString("tender_cases.save_subscriders", "Save"), UserCases.PARAMETER_ACTION,
-				String.valueOf(CasesProcessor.ACTION_SAVE));
-		buttons.add(save);
+		if (caseInfo != null) {
+			SubmitButton save = new SubmitButton(iwrb.getLocalizedString("tender_cases.save_subscriders", "Save"), UserCases.PARAMETER_ACTION,
+					String.valueOf(CasesProcessor.ACTION_SAVE));
+			buttons.add(save);
+		}
 	}
 	
 	private void addUsersFilter(UIComponent container, List<String> selectedUsers, String label, String selectedUsersInputName) {
