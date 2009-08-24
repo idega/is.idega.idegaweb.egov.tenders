@@ -157,6 +157,16 @@ public class TendersHelperImp implements TendersHelper {
 		return getCaseManagersProvider().getCaseManager().getCasesByEntities(filteredCases == null ? cases : filteredCases, locale);
 	}
 	
+	public List<CasePresentation> getSortedCases(List<CasePresentation> casesToSort, Locale locale) {
+		if (ListUtil.isEmpty(casesToSort)) {
+			return null;
+		}
+		
+		Collections.sort(casesToSort, new CasePresentationComparator(locale));
+		
+		return casesToSort;
+	}
+	
 	@Transactional(readOnly=true)
 	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser, Locale locale) {
 		if (ListUtil.isEmpty(cases)) {
@@ -265,9 +275,7 @@ public class TendersHelperImp implements TendersHelper {
 			}
 		}
 		
-		Collections.sort(validCases, new CasePresentationComparator(locale));
-		
-		return validCases;
+		return getSortedCases(validCases, locale);
 	}
 	
 	private boolean isCaseVisible(CasePresentationInfo caseInfo, User currentUser) {

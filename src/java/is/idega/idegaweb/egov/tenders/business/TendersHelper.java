@@ -3,6 +3,7 @@ package is.idega.idegaweb.egov.tenders.business;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import com.idega.block.process.business.CaseBusiness;
@@ -28,6 +29,8 @@ public interface TendersHelper {
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow);
 
 	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser, Locale locale);
+	
+	public List<CasePresentation> getSortedCases(List<CasePresentation> casesToSort, Locale locale);
 	
 	public CasePresentationInfo getTenderCaseInfo(Object caseId);
 

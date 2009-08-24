@@ -305,9 +305,8 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		
 		setCaseId(caseId);
 		
-		menu.setOnChange("TendersHelper.setSelectedTender('"+formId+"', '"+menu.getId()+"', '"+CasesProcessor.PARAMETER_CASE_PK+"');");
-//		menu.setOnChange(new StringBuilder("this.form['").append(CasesProcessor.PARAMETER_CASE_PK).append("'].value=dwr.util.getValue('")
-//				.append(menu.getId()).append("');this.form.submit();").toString());
+		menu.setOnChange(new StringBuilder("TendersHelper.setSelectedTender('").append(formId).append("', '").append(menu.getId()).append("', '")
+				.append(CasesProcessor.PARAMETER_CASE_PK).append("');").toString());
 		
 		return menu;
 	}
