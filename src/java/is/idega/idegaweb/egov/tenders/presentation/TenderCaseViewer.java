@@ -60,9 +60,11 @@ public class TenderCaseViewer extends BasicTenderViewer {
 			return;
 		}
 		
-		//	Heading
-		formContainer.add(getLabelAndInput(iwrb.getLocalizedString("tender_cases.tender_case_heading", "Tender name"),
-				caseInfo.getInfo(TendersConstants.TENDER_CASE_TENDER_NAME_VARIABLE)));
+		if (isActAsStandalone()) {
+			//	Heading
+			formContainer.add(getLabelAndInput(iwrb.getLocalizedString("tender_cases.tender_case_heading", "Tender name"),
+					caseInfo.getInfo(TendersConstants.TENDER_CASE_TENDER_NAME_VARIABLE)));
+		}
 		
 		//	Issuer
 		formContainer.add(getLabelAndInput(iwrb.getLocalizedString("tender_cases.tender_case_issuer", "Who is issuing the tender"),
