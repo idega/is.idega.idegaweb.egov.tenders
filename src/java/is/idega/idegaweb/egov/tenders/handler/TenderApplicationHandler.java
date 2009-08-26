@@ -1,27 +1,38 @@
 package is.idega.idegaweb.egov.tenders.handler;
 
+import is.idega.idegaweb.egov.bpm.cases.CasesBPMProcessConstants;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.TenderApplicationData;
 import is.idega.idegaweb.egov.tenders.business.TendersHelper;
+
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jbpm.JbpmContext;
+import org.jbpm.JbpmException;
 import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.idega.block.process.data.Case;
 import com.idega.block.process.variables.Variable;
 import com.idega.block.process.variables.VariableDataType;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
+import com.idega.jbpm.BPMContext;
+import com.idega.jbpm.JbpmCallback;
 import com.idega.jbpm.exe.BPMFactory;
+import com.idega.jbpm.exe.ProcessInstanceW;
 import com.idega.jbpm.exe.TaskInstanceW;
 import com.idega.jbpm.variables.VariablesHandler;
 import com.idega.util.IWTimestamp;
+import com.idega.util.StringUtil;
 
 @Service("tenderApplicationHandler")
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -36,6 +47,9 @@ public class TenderApplicationHandler implements ActionHandler {
 	
 	@Autowired
 	private BPMFactory bpmFactory;
+	
+	@Autowired
+	private BPMContext bpmContext;
 	
 	@Autowired
 	private TendersHelper tendersHelper;
@@ -70,6 +84,44 @@ public class TenderApplicationHandler implements ActionHandler {
 				LOGGER.warning("Unable to disable seeing attachments of task " + currentTask.getTaskInstance().getName() + " for roles: " +
 						TendersConstants.TENDER_CASES_3RD_PARTIES_ROLES);
 			}
+		}
+		
+		setIdentifier(currentTask, data);
+	}
+	
+	@Transactional(readOnly=false)
+	private void setIdentifier(TaskInstanceW currentTask, TenderApplicationData data) {
+		final ProcessInstanceW piw = currentTask.getProcessInstanceW();
+		final Long processInstanceId = piw.getProcessInstanceId();
+		
+		Case theCase = tendersHelper.getCase(processInstanceId);
+		if (theCase == null) {
+			LOGGER.warning("Unable to set new identifer, case was not found for process: " + processInstanceId);
+			return;
+		}
+		
+		String currentIdentifier = theCase.getCaseIdentifier();
+		final String identifierFromForm = data.getIdentifier();
+		if (StringUtil.isEmpty(identifierFromForm) || identifierFromForm.equals(currentIdentifier)) {
+			return;
+		}
+		
+		theCase.setCaseIdentifier(identifierFromForm);
+		theCase.store();
+		
+		String identifierFromProcess = piw.getProcessIdentifier();
+		if (StringUtil.isEmpty(identifierFromProcess) || !identifierFromForm.equals(identifierFromProcess)) {
+			bpmContext.execute(new JbpmCallback() {
+				public Object doInJbpm(JbpmContext context) throws JbpmException {
+					try {
+						piw.getProcessInstance().getContextInstance().setVariable(CasesBPMProcessConstants.caseIdentifier, identifierFromForm);
+						return Boolean.TRUE;
+					} catch (Exception e) {
+						LOGGER.log(Level.WARNING, "Error setting identifier '"+identifierFromForm+"' for process: " + processInstanceId, e);
+						return Boolean.FALSE;
+					}
+				}
+			});
 		}
 	}
 	

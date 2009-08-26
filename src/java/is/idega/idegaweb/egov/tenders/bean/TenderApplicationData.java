@@ -9,13 +9,13 @@ public class TenderApplicationData implements Serializable {
 
 	private static final long serialVersionUID = -1387333272903656257L;
 	
+	private String identifier;
+	
 	private String privateCaseValue;
 	private String paymentCaseValue;
 	
 	private Date whenTheTenderShouldBeDisplayed;
 	private Date lastDayToSendBids;
-	
-	private boolean customIdentifier;
 	
 	public String getPrivateCaseValue() {
 		return privateCaseValue;
@@ -53,12 +53,11 @@ public class TenderApplicationData implements Serializable {
 	public boolean isPaymentCase() {
 		return getBooleanValue(getPaymentCaseValue());
 	}
-	
-	public boolean isCustomIdentifier() {
-		return customIdentifier;
+	public String getIdentifier() {
+		return identifier;
 	}
-	public void setCustomIdentifier(boolean customIdentifier) {
-		this.customIdentifier = customIdentifier;
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
 	
 }

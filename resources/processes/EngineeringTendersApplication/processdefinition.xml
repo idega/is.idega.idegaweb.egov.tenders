@@ -105,9 +105,10 @@
       				c_otd.setPaymentCaseValue(paymentCaseValue);
       				c_otd.setWhenTheTenderShouldBeDisplayed(whenTheTenderShouldBeDisplayed);
       				c_otd.setLastDayToSendBids(lastDayToSendBids);
-      				c_otd.setCustomIdentifier(true);
+      				c_otd.setIdentifier(customIdentifier);
       			</expression>
       			<variable name='ownerTenderData' access='write' mapped-name='c_otd' />
+      			<variable name="string_caseIdentifier" access="read" mapped-name="customIdentifier" />
       			<variable name='string_caseIsPrivate' access='read' mapped-name='privateCaseValue' />
       			<variable name='string_paymentCase' access='read' mapped-name='paymentCaseValue' />
       			<variable name='date_whenTheTenderShouldBeDisplayed' access='read' mapped-name='whenTheTenderShouldBeDisplayed' />
@@ -368,8 +369,10 @@
       				c_otd.setPaymentCaseValue(paymentCaseValue);
       				c_otd.setWhenTheTenderShouldBeDisplayed(whenTheTenderShouldBeDisplayed);
       				c_otd.setLastDayToSendBids(lastDayToSendBids);
+      				c_otd.setIdentifier(customIdentifier);
       			</expression>
       			<variable name='ownerTenderData' access='write' mapped-name='c_otd' />
+      			<variable name="string_caseIdentifier" access="read" mapped-name="customIdentifier" />
       			<variable name='string_caseIsPrivate' access='read' mapped-name='privateCaseValue' />
       			<variable name='string_paymentCase' access='read' mapped-name='paymentCaseValue' />
       			<variable name='date_whenTheTenderShouldBeDisplayed' access='read' mapped-name='whenTheTenderShouldBeDisplayed' />

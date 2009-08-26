@@ -11,8 +11,7 @@
             <xf:instance id="data-instance" xmlns="">
                 <data>
                     <form_id>134</form_id>
-                    <Identifier_number_fbc_51
-                        mapping="string_caseIdentifier" nodeType="formIdentifier"/>
+                    <Identifier_number_fbc_51 mapping="string_caseIdentifier" nodeType="formIdentifier"/>
                     <Tender_name_fbc_10 mapping="string_caseDescription"/>
                     <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
                     <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
@@ -104,6 +103,7 @@
                     nodeset="../entry[position() != last()]" type="xs:anyURI"/>
             </xf:bind>
             <xf:bind id="fbc_51_bind" nodeset="Identifier_number_fbc_51"
+            	 readonly="instance('control-instance')/readonly = 'true'"
                 required="instance('control-instance')/required = 'true'" type="xs:string"/>
         </xf:model>
         <xf:model id="data_model">
