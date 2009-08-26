@@ -24,6 +24,7 @@ import com.idega.block.process.variables.Variable;
 import com.idega.block.process.variables.VariableDataType;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
+import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
 import com.idega.jbpm.BPMContext;
 import com.idega.jbpm.JbpmCallback;
@@ -108,6 +109,10 @@ public class TenderApplicationHandler implements ActionHandler {
 		
 		theCase.setCaseIdentifier(identifierFromForm);
 		theCase.store();
+		
+		CaseProcInstBind bind = getCasesBPMDAO().getCaseProcInstBindByProcessInstanceId(processInstanceId);
+		bind.setCaseIdentifier(identifierFromForm);
+		getCasesBPMDAO().persist(bind);
 		
 		String identifierFromProcess = piw.getProcessIdentifier();
 		if (StringUtil.isEmpty(identifierFromProcess) || !identifierFromForm.equals(identifierFromProcess)) {
