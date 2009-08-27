@@ -174,7 +174,7 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 			emails = allSubscribers.contains(authorEmail) ? Arrays.asList(authorEmail) : null;
 		} else if (comment.isPrivateComment() && !justPublished) {
 			//	Private comment was created: notifying handlers
-			emails = getEmails(getUsersByRoleKey());
+			emails = getEmails(getCaseHandlers(properties.getIdentifier()));
 		} else if (justPublished) {
 			//	Private comment was published: notifying everybody except author and handlers
 			List<String> subscribersEmails = getAllFeedSubscribers(properties.getIdentifier(), comment.getAuthorId());
@@ -182,7 +182,7 @@ public class TendersCommentsPersistenceManager extends BPMCommentsPersistenceMan
 				return null;
 			}
 			
-			List<String> handlersEmails = getEmails(getUsersByRoleKey());
+			List<String> handlersEmails = getEmails(getCaseHandlers(properties.getIdentifier()));
 			if (ListUtil.isEmpty(handlersEmails)) {
 				return subscribersEmails;
 			}
