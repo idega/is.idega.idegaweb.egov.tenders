@@ -4,7 +4,7 @@ import is.idega.idegaweb.egov.bpm.cases.CasesBPMProcessConstants;
 import is.idega.idegaweb.egov.bpm.cases.exe.CaseIdentifier;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import org.jbpm.context.exe.VariableInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -83,7 +83,7 @@ public class TenderCaseIdentifier extends CaseIdentifier {
 	}
 	
 	private boolean canUseIdentifier(String identifier) {
-		List<VariableInstance> variables = getCasesBPMDAO().getVariablesByNames(Arrays.asList(CasesBPMProcessConstants.caseIdentifier));
+		Collection<VariableInstance> variables = getCasesBPMDAO().getVariablesByNames(Arrays.asList(CasesBPMProcessConstants.caseIdentifier));
 		if (ListUtil.isEmpty(variables)) {
 			return true;
 		}
