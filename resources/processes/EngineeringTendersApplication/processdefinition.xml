@@ -84,6 +84,7 @@
 			<variable access="write" name="string_descriptionOfJob"></variable>
 			<variable access="write,required" name="date_whenTheTenderShouldBeDisplayed"></variable>
 			<variable access="write,required" name="date_lastDayToSendBids"></variable>
+			<variable access="write" name="string_deadlineToSendBids"></variable>
 			<variable access="write" name="files_tenderApplicationFiles"></variable>
 			<variable access="write" name="string_caseIsPrivate"></variable>
 			<variable access="write" name="string_paymentCase"></variable>
@@ -106,6 +107,7 @@
       				c_otd.setWhenTheTenderShouldBeDisplayed(whenTheTenderShouldBeDisplayed);
       				c_otd.setLastDayToSendBids(lastDayToSendBids);
       				c_otd.setIdentifier(customIdentifier);
+      				c_otd.setDeadlineToSendBids(deadlineToSendBids);
       			</expression>
       			<variable name='ownerTenderData' access='write' mapped-name='c_otd' />
       			<variable name="string_caseIdentifier" access="read" mapped-name="customIdentifier" />
@@ -113,6 +115,7 @@
       			<variable name='string_paymentCase' access='read' mapped-name='paymentCaseValue' />
       			<variable name='date_whenTheTenderShouldBeDisplayed' access='read' mapped-name='whenTheTenderShouldBeDisplayed' />
       			<variable name='date_lastDayToSendBids' access='read' mapped-name='lastDayToSendBids' />
+      			<variable name='string_deadlineToSendBids' access='read' mapped-name='deadlineToSendBids' />
       		</script>
 			<action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
             	<handlerName>setProcessDescriptionHandler</handlerName>
@@ -351,6 +354,7 @@
 			<variable access="read,write" name="files_tenderApplicationFiles"></variable>
 			<variable access="read,write" name="string_caseIsPrivate"></variable>
 			<variable access="read,write" name="string_paymentCase"></variable>
+			<variable access="read,write" name="string_deadlineToSendBids"></variable>
          </controller>
       </task>
 		<event type="task-end">
@@ -370,6 +374,7 @@
       				c_otd.setWhenTheTenderShouldBeDisplayed(whenTheTenderShouldBeDisplayed);
       				c_otd.setLastDayToSendBids(lastDayToSendBids);
       				c_otd.setIdentifier(customIdentifier);
+      				c_otd.setDeadlineToSendBids(deadlineToSendBids);
       			</expression>
       			<variable name='ownerTenderData' access='write' mapped-name='c_otd' />
       			<variable name="string_caseIdentifier" access="read" mapped-name="customIdentifier" />
@@ -377,6 +382,7 @@
       			<variable name='string_paymentCase' access='read' mapped-name='paymentCaseValue' />
       			<variable name='date_whenTheTenderShouldBeDisplayed' access='read' mapped-name='whenTheTenderShouldBeDisplayed' />
       			<variable name='date_lastDayToSendBids' access='read' mapped-name='lastDayToSendBids' />
+      			<variable name='string_deadlineToSendBids' access='read' mapped-name='deadlineToSendBids' />
       		</script>
 			<action class="com.idega.jbpm.proxy.JbpmHandlerProxy"> 
             	<handlerName>setProcessDescriptionHandler</handlerName>

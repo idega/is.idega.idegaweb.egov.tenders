@@ -25,6 +25,7 @@ public class TendersConstants {
 	public static final String TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE = "date_" + TENDER_CASE_LAST_DATE_FOR_QUESTIONS;
 	public static final String TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS = "lastDayToAnswerQuestions";
 	public static final String TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE = "date_" + TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS;
+	public static final String TENDER_CASE_DEADLINE_TO_SEND_BIDS_VARIABLE = "string_deadlineToSendBids";
 	
 	public static final String TENDER_CASE_TENDER_NAME_VARIABLE = "string_caseDescription";
 	public static final String TENDER_CASE_TENDER_ISSUER_VARIABLE = "string_issuerOfTender";

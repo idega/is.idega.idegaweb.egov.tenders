@@ -17,6 +17,8 @@ public class TenderApplicationData implements Serializable {
 	private Date whenTheTenderShouldBeDisplayed;
 	private Date lastDayToSendBids;
 	
+	private String deadlineToSendBids;
+	
 	public String getPrivateCaseValue() {
 		return privateCaseValue;
 	}
@@ -58,6 +60,12 @@ public class TenderApplicationData implements Serializable {
 	}
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
+	}
+	public String getDeadlineToSendBids() {
+		return deadlineToSendBids;
+	}
+	public void setDeadlineToSendBids(String deadlineToSendBids) {
+		this.deadlineToSendBids = deadlineToSendBids;
 	}
 	
 }

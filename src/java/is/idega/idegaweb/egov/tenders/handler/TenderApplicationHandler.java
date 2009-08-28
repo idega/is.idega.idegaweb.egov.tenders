@@ -76,9 +76,9 @@ public class TenderApplicationHandler implements ActionHandler {
 
 		IWMainApplicationSettings settings = IWMainApplication.getDefaultIWMainApplication().getSettings();
 		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(),
-				settings.getProperty("tndr_time_frame_make_questions", String.valueOf(7)));
+				settings.getProperty("tndr_time_frame_make_questions", String.valueOf(7)), data);
 		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(),
-				settings.getProperty("tndr_time_frame_answer_questions", String.valueOf(4)));
+				settings.getProperty("tndr_time_frame_answer_questions", String.valueOf(4)), data);
 		
 		if (data.isPaymentCase()) {
 			if (!getTendersHelper().disableToSeeAllAttachmentsForNonPayers(currentTask)) {
@@ -130,7 +130,7 @@ public class TenderApplicationHandler implements ActionHandler {
 		}
 	}
 	
-	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, String change) {
+	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, String change, TenderApplicationData data) {
 		int realChange = 0;
 		try {
 			realChange = Integer.valueOf(change);
@@ -142,10 +142,39 @@ public class TenderApplicationHandler implements ActionHandler {
 		
 		IWTimestamp changedTime = new IWTimestamp(value.getTime());
 		changedTime.setDay(changedTime.getDay() - realChange);
-		changedTime.setHour(23);
-		changedTime.setMinute(59);
-		changedTime.setSecond(59);
-		changedTime.setMilliSecond(999);
+		
+		Integer hour = 23;
+		Integer minutes = 59;
+		if (StringUtil.isEmpty(data.getDeadlineToSendBids())) {
+			changedTime.setSecond(59);
+			changedTime.setMilliSecond(999);
+		} else {
+			String[] hourAndMinutes = data.getDeadlineToSendBids().split(":");
+			try {
+				hour = Integer.valueOf(hourAndMinutes[0]);
+			} catch (Exception e) {}
+			if (hour > 23) {
+				hour = 23;
+			} else if (hour < 0) {
+				hour = 0;
+			}
+			
+			if (hourAndMinutes.length == 2) {
+				try {
+					minutes = Integer.valueOf(hourAndMinutes[1]);
+				} catch(Exception e) {}
+				if (minutes > 59) {
+					minutes = 59;
+				} else if (minutes < 0) {
+					minutes = 0;
+				}
+			}
+			
+			Variable timeVariable = new Variable(TendersConstants.TENDER_CASE_DEADLINE_TO_SEND_BIDS_VARIABLE, VariableDataType.STRING);
+			taskInstance.addVariable(timeVariable, hour + ":" + minutes);
+		}
+		changedTime.setHour(hour);
+		changedTime.setMinute(minutes);
 		
 		value = new Date(changedTime.getTimestamp().getTime());
 		

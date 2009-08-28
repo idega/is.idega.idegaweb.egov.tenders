@@ -21,6 +21,7 @@
                         mapping="date_whenTheTenderShouldBeDisplayed" xsi:nil="true"/>
                     <The_last_day_to_send_in_bids_fbc_17
                         mapping="date_lastDayToSendBids" xsi:nil="true"/>
+                    <Deadline_to_send_in_bids_fbc_20 mapping="string_deadlineToSendBids" />
                     <Attachments_fbc_18 mapping="files_tenderApplicationFiles">
                         <group/>
                         <entry filename="" mediatype="">
@@ -94,16 +95,20 @@
                 readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_15_bind"
                 nodeset="When_the_tender_should_be_displayed_fbc_15"
-                required="instance('control-instance')/required = 'true'" type="date"/>
+                required="instance('control-instance')/required = 'true'" 
+                readonly="instance('control-instance')/readonly = 'true'" type="date"/>
             <xf:bind id="fbc_17_bind"
                 nodeset="The_last_day_to_send_in_bids_fbc_17"
-                required="instance('control-instance')/required = 'true'" type="date"/>
+                required="instance('control-instance')/required = 'true'" 
+                readonly="instance('control-instance')/readonly = 'true'" type="date"/>
+            <xf:bind id="fbc_20_bind" nodeset="Deadline_to_send_in_bids_fbc_20" type="xs:string" 
+           		readonly="instance('control-instance')/readonly = 'true'"/>
             <xf:bind id="fbc_18_bind" nodeset="Attachments_fbc_18/group" relevant="instance('control-instance')/readonly != 'true' and instance('control-instance')/generatePdf != 'true'">
                 <xf:bind id="fbc_18_bind-entries"
                     nodeset="../entry[position() != last()]" type="xs:anyURI"/>
             </xf:bind>
             <xf:bind id="fbc_51_bind" nodeset="Identifier_number_fbc_51"
-            	 readonly="instance('control-instance')/readonly = 'true'"
+            	readonly="instance('control-instance')/readonly = 'true'"
                 required="instance('control-instance')/required = 'true'" type="xs:string"/>
         </xf:model>
         <xf:model id="data_model">
@@ -141,6 +146,8 @@
                     <fbc_15-label lang="en">When the tender should be displayed</fbc_15-label>
                     <fbc_17-label lang="is_IS">Skil á tilboðum</fbc_17-label>
                     <fbc_17-label lang="en">The last day to send in bids</fbc_17-label>
+                    <fbc_20-label lang="is_IS">Skilatími</fbc_20-label>
+                    <fbc_20-label lang="en">Deadline (time) to send in bids</fbc_20-label>
                     <fbc_18-paragraph-text lang="is_IS">Mögulegt er að senda viðbótarupplýsingar í viðhengi</fbc_18-paragraph-text>
                     <fbc_18-paragraph-text lang="en">Additional information can be sent with the form as attachments</fbc_18-paragraph-text>
                     <fbc_18-title lang="is_IS">Viðhengi</fbc_18-title>
@@ -354,6 +361,9 @@
                                     model="data_model" value="instance('localized_strings')/fbc_17-required[@lang=instance('localized_strings')/current_language]"/>
                             </idega:validator>
                             <xf:alert ref="instance('error-instance')/error[@for='fbc_17']"/>
+                        </xf:input>
+                        <xf:input bind="fbc_20_bind" id="fbc_20" type="fbc_text" class="xFormInputMask_time">
+                            <xf:label model="data_model" ref="instance('localized_strings')/fbc_20-label[@lang=instance('localized_strings')/current_language]"/>
                         </xf:input>
                         <xf:group appearance="full" bind="fbc_18_bind"
                             id="fbc_18" type="fbc_multiupload">
