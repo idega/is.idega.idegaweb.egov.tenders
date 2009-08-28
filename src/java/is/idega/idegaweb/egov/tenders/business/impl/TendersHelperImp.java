@@ -241,13 +241,15 @@ public class TendersHelperImp implements TendersHelper {
 			if (variable instanceof DateInstance) {
 				Object o = variable.getValue();
 				if (o instanceof Timestamp) {
+					Timestamp time = (Timestamp) o;
+					
 					CasePresentationInfo caseInfo = info.get(variable.getProcessInstance().getId());
 					if (caseInfo != null) {
 						String name = variable.getName();
 						if (TendersConstants.TENDER_CASE_START_DATE_VARIABLE.equals(name)) {
-							caseInfo.setStartDate((Timestamp) o);
+							caseInfo.setStartDate(time);
 						} else if (TendersConstants.TENDER_CASE_END_DATE_VARIABLE.equals(name)) {
-							caseInfo.setEndDate((Timestamp) o);
+							caseInfo.setEndDate(time);
 						}
 					}
 				}

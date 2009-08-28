@@ -65,14 +65,7 @@ public class CasePresentationInfo {
 		return endDate;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void setEndDate(Timestamp endDate) {
-		if (endDate != null) {
-			endDate.setHours(23);
-			endDate.setMinutes(59);
-			endDate.setSeconds(59);
-			endDate.setNanos(999999999);
-		}
 		this.endDate = endDate;
 	}
 	

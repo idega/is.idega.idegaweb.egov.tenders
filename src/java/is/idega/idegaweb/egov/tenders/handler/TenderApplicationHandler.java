@@ -74,11 +74,13 @@ public class TenderApplicationHandler implements ActionHandler {
 			return;
 		}
 
+		setRealDeadline(currentTask, data);
+		Date lastDayToSendBids = (Date) currentTask.getVariable(TendersConstants.TENDER_CASE_END_DATE_VARIABLE);
 		IWMainApplicationSettings settings = IWMainApplication.getDefaultIWMainApplication().getSettings();
-		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, data.getLastDayToSendBids(),
-				settings.getProperty("tndr_time_frame_make_questions", String.valueOf(7)), data);
-		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, data.getLastDayToSendBids(),
-				settings.getProperty("tndr_time_frame_answer_questions", String.valueOf(4)), data);
+		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DATE_FOR_QUESTIONS_VARIABLE, lastDayToSendBids,
+				settings.getProperty("tndr_time_frame_make_questions", String.valueOf(7)));
+		addDateVariable(currentTask, TendersConstants.TENDER_CASE_LAST_DAY_TO_ANSWER_QUESTIONS_VARIABLE, lastDayToSendBids,
+				settings.getProperty("tndr_time_frame_answer_questions", String.valueOf(4)));
 		
 		if (data.isPaymentCase()) {
 			if (!getTendersHelper().disableToSeeAllAttachmentsForNonPayers(currentTask)) {
@@ -130,25 +132,19 @@ public class TenderApplicationHandler implements ActionHandler {
 		}
 	}
 	
-	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, String change, TenderApplicationData data) {
-		int realChange = 0;
-		try {
-			realChange = Integer.valueOf(change);
-		} catch(Exception e) {
-			LOGGER.log(Level.WARNING, "Invalid number: " + change, e);
+	private void setRealDeadline(TaskInstanceW taskInstance, TenderApplicationData data) {
+		Object o = taskInstance.getVariable(TendersConstants.TENDER_CASE_END_DATE_VARIABLE);
+		if (!(o instanceof Date)) {
+			return;
 		}
 		
-		Variable dateVariable = new Variable(name, VariableDataType.DATE);
-		
-		IWTimestamp changedTime = new IWTimestamp(value.getTime());
-		changedTime.setDay(changedTime.getDay() - realChange);
+		IWTimestamp lastDatToAnswerQuestions = new IWTimestamp((Date) o);
 		
 		Integer hour = 23;
 		Integer minutes = 59;
-		if (StringUtil.isEmpty(data.getDeadlineToSendBids())) {
-			changedTime.setSecond(59);
-			changedTime.setMilliSecond(999);
-		} else {
+		Integer seconds = 59;
+		Integer milliseconds = 999;
+		if (!StringUtil.isEmpty(data.getDeadlineToSendBids())) {
 			String[] hourAndMinutes = data.getDeadlineToSendBids().split(":");
 			try {
 				hour = Integer.valueOf(hourAndMinutes[0]);
@@ -170,15 +166,36 @@ public class TenderApplicationHandler implements ActionHandler {
 				}
 			}
 			
-			Variable timeVariable = new Variable(TendersConstants.TENDER_CASE_DEADLINE_TO_SEND_BIDS_VARIABLE, VariableDataType.STRING);
-			taskInstance.addVariable(timeVariable, hour + ":" + minutes);
+			seconds = 0;
+			milliseconds = 0;
 		}
-		changedTime.setHour(hour);
-		changedTime.setMinute(minutes);
+		Variable timeVariable = new Variable(TendersConstants.TENDER_CASE_DEADLINE_TO_SEND_BIDS_VARIABLE, VariableDataType.STRING);
+		taskInstance.addVariable(timeVariable, hour + ":" + minutes);
 		
-		value = new Date(changedTime.getTimestamp().getTime());
+		lastDatToAnswerQuestions.setHour(hour);
+		lastDatToAnswerQuestions.setMinute(minutes);
+		lastDatToAnswerQuestions.setSecond(seconds);
+		lastDatToAnswerQuestions.setMilliSecond(milliseconds);
+		Variable lastDatToAnswerQuestionsVariable = new Variable(TendersConstants.TENDER_CASE_END_DATE_VARIABLE, VariableDataType.DATE);
+		Date realDeadline = new Date(lastDatToAnswerQuestions.getTimestamp().getTime());
+		taskInstance.addVariable(lastDatToAnswerQuestionsVariable, realDeadline);
+	}
+	
+	private void addDateVariable(TaskInstanceW taskInstance, String name, Date value, String change) {
+		int realChange = 0;
+		try {
+			realChange = Integer.valueOf(change);
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Invalid number: " + change, e);
+		}
 		
-		taskInstance.addVariable(dateVariable, value);
+		Variable dateVariable = new Variable(name, VariableDataType.DATE);
+		
+		IWTimestamp changedTime = new IWTimestamp(value.getTime());
+		changedTime.setDay(changedTime.getDay() - realChange);
+		Date changedDate = new Date(changedTime.getTimestamp().getTime());
+		
+		taskInstance.addVariable(dateVariable, changedDate);
 	}
 
 	public TenderApplicationData getTenderData() {
