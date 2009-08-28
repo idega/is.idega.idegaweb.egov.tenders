@@ -2,7 +2,6 @@ package is.idega.idegaweb.egov.tenders.business.impl;
 
 import is.idega.idegaweb.egov.bpm.cases.messages.CaseUserFactory;
 import is.idega.idegaweb.egov.bpm.cases.messages.CaseUserImpl;
-import is.idega.idegaweb.egov.bpm.cases.presentation.UICasesBPMAssets;
 import is.idega.idegaweb.egov.tenders.TendersConstants;
 import is.idega.idegaweb.egov.tenders.bean.CasePresentationInfo;
 import is.idega.idegaweb.egov.tenders.business.TendersCommentsPersistenceManager;
@@ -31,6 +30,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.idega.block.article.component.CommentsViewer;
 import com.idega.block.process.business.CaseBusiness;
 import com.idega.block.process.business.CaseManagersProvider;
 import com.idega.block.process.business.CasesRetrievalManager;
@@ -439,7 +439,7 @@ public class TendersHelperImp implements TendersHelper {
 		
 		URIUtil uriUtil = new URIUtil(uri);
 		uriUtil.setParameter(CasesRetrievalManager.COMMENTS_PERSISTENCE_MANAGER_IDENTIFIER, TendersCommentsPersistenceManager.BEAN_IDENTIFIER);
-		uriUtil.setParameter(UICasesBPMAssets.AUTO_SHOW_COMMENTS, Boolean.TRUE.toString());
+		uriUtil.setParameter(CommentsViewer.AUTO_SHOW_COMMENTS, Boolean.TRUE.toString());
 		
 		return uriUtil.getUri();
 	}
