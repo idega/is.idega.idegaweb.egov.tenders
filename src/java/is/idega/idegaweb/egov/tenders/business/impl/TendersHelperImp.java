@@ -19,10 +19,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jbpm.context.exe.VariableInstance;
-import org.jbpm.context.exe.variableinstance.DateInstance;
-import org.jbpm.context.exe.variableinstance.HibernateStringInstance;
-import org.jbpm.context.exe.variableinstance.StringInstance;
 import org.jbpm.graph.exe.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,9 +47,13 @@ import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.egov.bpm.data.CaseProcInstBind;
 import com.idega.idegaweb.egov.bpm.data.dao.CasesBPMDAO;
+import com.idega.jbpm.bean.VariableDateInstance;
+import com.idega.jbpm.bean.VariableInstanceInfo;
+import com.idega.jbpm.bean.VariableStringInstance;
 import com.idega.jbpm.data.Actor;
 import com.idega.jbpm.data.ActorPermissions;
 import com.idega.jbpm.data.NativeIdentityBind;
+import com.idega.jbpm.data.VariableInstanceQuerier;
 import com.idega.jbpm.data.NativeIdentityBind.IdentityType;
 import com.idega.jbpm.data.dao.BPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
@@ -102,6 +102,9 @@ public class TendersHelperImp implements TendersHelper {
 	
 	@Autowired
 	private BPMDAO bpmDAO;
+	
+	@Autowired
+	private VariableInstanceQuerier variablesQuerier;
 	
 	public PagedDataCollection<CasePresentation> getAllCases(Locale locale, String statusesToHide, String statusesToShow) {
 		CaseHome caseHome = null;
@@ -222,9 +225,9 @@ public class TendersHelperImp implements TendersHelper {
 			return null;
 		}
 		
-		List<VariableInstance> variables = null;
+		Collection<VariableInstanceInfo> variables = null;
 		try {
-			variables = getCasesDAO().getVariablesByProcessInstanceIdAndVariablesNames(processInstanceIds, Arrays.asList(
+			variables = getVariablesQuerier().getVariablesByProcessInstanceIdAndVariablesNames(processInstanceIds, Arrays.asList(
 					TendersConstants.TENDER_CASE_START_DATE_VARIABLE,
 					TendersConstants.TENDER_CASE_END_DATE_VARIABLE,
 					TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE,
@@ -237,24 +240,20 @@ public class TendersHelperImp implements TendersHelper {
 			return null;
 		}
 		
-		for (VariableInstance variable: variables) {
-			if (variable instanceof DateInstance) {
-				Object o = variable.getValue();
-				if (o instanceof Timestamp) {
-					Timestamp time = (Timestamp) o;
-					
-					CasePresentationInfo caseInfo = info.get(variable.getProcessInstance().getId());
-					if (caseInfo != null) {
-						String name = variable.getName();
-						if (TendersConstants.TENDER_CASE_START_DATE_VARIABLE.equals(name)) {
-							caseInfo.setStartDate(time);
-						} else if (TendersConstants.TENDER_CASE_END_DATE_VARIABLE.equals(name)) {
-							caseInfo.setEndDate(time);
-						}
+		for (VariableInstanceInfo variable: variables) {
+			if (variable instanceof VariableDateInstance) {
+				Timestamp time = ((VariableDateInstance) variable).getValue();
+				CasePresentationInfo caseInfo = info.get(variable.getProcessInstanceId());
+				if (caseInfo != null) {
+					String name = variable.getName();
+					if (TendersConstants.TENDER_CASE_START_DATE_VARIABLE.equals(name)) {
+						caseInfo.setStartDate(time);
+					} else if (TendersConstants.TENDER_CASE_END_DATE_VARIABLE.equals(name)) {
+						caseInfo.setEndDate(time);
 					}
 				}
-			} else if (variable instanceof StringInstance || variable instanceof HibernateStringInstance) {
-				CasePresentationInfo caseInfo = info.get(variable.getProcessInstance().getId());
+			} else if (variable instanceof VariableStringInstance) {
+				CasePresentationInfo caseInfo = info.get(variable.getProcessInstanceId());
 				if (caseInfo != null) {
 					if (TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE.equals(variable.getName())) {
 						caseInfo.setCaseIsPrivate(Boolean.valueOf(variable.getValue().toString()));
@@ -376,9 +375,9 @@ public class TendersHelperImp implements TendersHelper {
 		
 		CasePresentationInfo info = new CasePresentationInfo(bind.getProcInstId());
 		
-		List<VariableInstance> variables = null;
+		Collection<VariableInstanceInfo> variables = null;
 		try {
-			variables = getCasesDAO().getVariablesByProcessInstanceIdAndVariablesNames(Arrays.asList(info.getProcessInstanceId()), Arrays.asList(
+			variables = getVariablesQuerier().getVariablesByProcessInstanceIdAndVariablesNames(Arrays.asList(info.getProcessInstanceId()), Arrays.asList(
 					TendersConstants.TENDER_CASE_TENDER_NAME_VARIABLE,
 					TendersConstants.TENDER_CASE_TENDER_ISSUER_VARIABLE,
 					TendersConstants.TENDER_CASE_JOB_DESCRIPTION_VARIABLE,
@@ -392,8 +391,8 @@ public class TendersHelperImp implements TendersHelper {
 			return info;
 		}
 		
-		for (VariableInstance variable: variables) {
-			if (variable instanceof StringInstance || variable instanceof HibernateStringInstance) {
+		for (VariableInstanceInfo variable: variables) {
+			if (variable instanceof VariableStringInstance) {
 				info.addInfo(variable.getName(), variable.getValue().toString());
 				
 				if (TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE.equals(variable.getName())) {
@@ -970,5 +969,13 @@ public class TendersHelperImp implements TendersHelper {
 		}
 		
 		return true;
+	}
+
+	public VariableInstanceQuerier getVariablesQuerier() {
+		return variablesQuerier;
+	}
+
+	public void setVariablesQuerier(VariableInstanceQuerier variablesQuerier) {
+		this.variablesQuerier = variablesQuerier;
 	}
 }
