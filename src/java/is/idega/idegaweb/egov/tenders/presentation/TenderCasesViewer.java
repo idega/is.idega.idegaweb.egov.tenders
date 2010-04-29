@@ -6,6 +6,7 @@ import is.idega.idegaweb.egov.tenders.business.TendersHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,14 +62,18 @@ public class TenderCasesViewer extends OpenCases {
 			add(container);
 			container.setStyleClass("currentTendersCasesViewer");
 			
-			PagedDataCollection<CasePresentation> cases = tendersHelper.getAllCases(iwc.getCurrentLocale(), getCaseStatusesToHide(), getCaseStatusesToShow());
+			Locale locale = iwc.getCurrentLocale();
+			PagedDataCollection<CasePresentation> cases = tendersHelper.getAllCases(locale, getCaseStatusesToHide(), getCaseStatusesToShow());
 			if (cases == null || ListUtil.isEmpty(cases.getCollection())) {
+				logWarning("There are no cases by locale: " + locale + ", statuses to hide: " + getCaseStatusesToHide() + ", statuses to show: " +
+						getCaseStatusesToShow());
 				container.add(new Heading1(getResourceBundle(iwc).getLocalizedString("tender_cases.no_cases_available", "There are no cases currently")));
 				return;
 			}
 			
-			Collection<CasePresentation> validCases = tendersHelper.getValidTendersCases(cases.getCollection(), currentUser, iwc.getCurrentLocale());
+			Collection<CasePresentation> validCases = tendersHelper.getValidTendersCases(cases.getCollection(), currentUser, locale);
 			if (ListUtil.isEmpty(validCases)) {
+				logWarning("No valid cases in " + validCases + " for current user: " + currentUser + " and locale: " + locale);
 				container.add(new Heading1(getResourceBundle(iwc).getLocalizedString("tender_cases.no_cases_available", "There are no cases currently")));
 				return;
 			}
