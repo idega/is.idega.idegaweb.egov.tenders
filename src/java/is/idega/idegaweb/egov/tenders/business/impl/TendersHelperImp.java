@@ -53,8 +53,8 @@ import com.idega.jbpm.bean.VariableStringInstance;
 import com.idega.jbpm.data.Actor;
 import com.idega.jbpm.data.ActorPermissions;
 import com.idega.jbpm.data.NativeIdentityBind;
-import com.idega.jbpm.data.VariableInstanceQuerier;
 import com.idega.jbpm.data.NativeIdentityBind.IdentityType;
+import com.idega.jbpm.data.VariableInstanceQuerier;
 import com.idega.jbpm.data.dao.BPMDAO;
 import com.idega.jbpm.exe.BPMFactory;
 import com.idega.jbpm.exe.ProcessInstanceW;
@@ -170,6 +170,7 @@ public class TendersHelperImp implements TendersHelper {
 		return casesToSort;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Transactional(readOnly=true)
 	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser, Locale locale) {
 		if (ListUtil.isEmpty(cases)) {
