@@ -10,8 +10,9 @@
         <xf:model id="submission_model" schema="#fb-schema">
             <xf:instance id="data-instance" xmlns="">
                 <data>
-                    <form_id>134</form_id>
-                    <Identifier_number_fbc_51 mapping="string_caseIdentifier" nodeType="formIdentifier"/>
+                    <form_id>4</form_id>
+                    <Identifier_number_fbc_51
+                        mapping="string_caseIdentifier" nodeType="formIdentifier"/>
                     <Tender_name_fbc_10 mapping="string_caseDescription"/>
                     <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
                     <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
@@ -21,7 +22,7 @@
                         mapping="date_whenTheTenderShouldBeDisplayed" xsi:nil="true"/>
                     <The_last_day_to_send_in_bids_fbc_17
                         mapping="date_lastDayToSendBids" xsi:nil="true"/>
-                    <Deadline_to_send_in_bids_fbc_20 mapping="string_deadlineToSendBids" />
+                    <Deadline_to_send_in_bids_fbc_20 mapping="string_deadlineToSendBids"/>
                     <Attachments_fbc_18 mapping="files_tenderApplicationFiles">
                         <group/>
                         <entry filename="" mediatype="">
@@ -95,20 +96,21 @@
                 readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_15_bind"
                 nodeset="When_the_tender_should_be_displayed_fbc_15"
-                required="instance('control-instance')/required = 'true'" 
-                readonly="instance('control-instance')/readonly = 'true'" type="date"/>
+                readonly="instance('control-instance')/readonly = 'true'"
+                required="instance('control-instance')/required = 'true'" type="date"/>
             <xf:bind id="fbc_17_bind"
                 nodeset="The_last_day_to_send_in_bids_fbc_17"
-                required="instance('control-instance')/required = 'true'" 
-                readonly="instance('control-instance')/readonly = 'true'" type="date"/>
-            <xf:bind id="fbc_20_bind" nodeset="Deadline_to_send_in_bids_fbc_20" type="xs:string" 
-           		readonly="instance('control-instance')/readonly = 'true'"/>
+                readonly="instance('control-instance')/readonly = 'true'"
+                required="instance('control-instance')/required = 'true'" type="date"/>
+            <xf:bind id="fbc_20_bind"
+                nodeset="Deadline_to_send_in_bids_fbc_20"
+                readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_18_bind" nodeset="Attachments_fbc_18/group" relevant="instance('control-instance')/readonly != 'true' and instance('control-instance')/generatePdf != 'true'">
                 <xf:bind id="fbc_18_bind-entries"
                     nodeset="../entry[position() != last()]" type="xs:anyURI"/>
             </xf:bind>
             <xf:bind id="fbc_51_bind" nodeset="Identifier_number_fbc_51"
-            	readonly="instance('control-instance')/readonly = 'true'"
+                readonly="instance('control-instance')/readonly = 'true'"
                 required="instance('control-instance')/required = 'true'" type="xs:string"/>
         </xf:model>
         <xf:model id="data_model">
@@ -180,6 +182,29 @@
                     <fbc_51-required lang="en">Required</fbc_51-required>
                     <fbc_19-help lang="is_IS"/>
                     <fbc_401-help lang="is_IS"/>
+                    <fbc_9-text lang="sv_SE">Anbudsansökan</fbc_9-text>
+                    <fbc_51-label lang="sv_SE">ID Nummer</fbc_51-label>
+                    <fbc_10-label lang="sv_SE">Anbudsnamn</fbc_10-label>
+                    <fbc_11-label lang="sv_SE">Anbudsutgivare</fbc_11-label>
+                    <fbc_12-label lang="sv_SE">Beskrivning</fbc_12-label>
+                    <submission-error_message lang="sv_SE">no value</submission-error_message>
+                    <fbc_19-label lang="sv_SE">Selektiv</fbc_19-label>
+                    <fbc_401-label lang="sv_SE">Avgift för deltagande</fbc_401-label>
+                    <fbc_51-required lang="sv_SE">Du måste fylla i ett ID nummer</fbc_51-required>
+                    <fbc_10-required lang="sv_SE">Du måste fylla i ett namn</fbc_10-required>
+                    <fbc_11-required lang="sv_SE">Du måste fylla i vem som ger ut anbudet</fbc_11-required>
+                    <page-1-save-label lang="sv_SE">Spara</page-1-save-label>
+                    <page-1-submit_button-label lang="sv_SE">Skicka in</page-1-submit_button-label>
+                    <fbc_15-label lang="sv_SE">Datum for publicering</fbc_15-label>
+                    <fbc_15-required lang="sv_SE">Du måste ange datum för publicering</fbc_15-required>
+                    <fbc_17-label lang="sv_SE">Sista dag för ingivande</fbc_17-label>
+                    <fbc_17-required lang="sv_SE">Du måste ange sista anbudsdatum</fbc_17-required>
+                    <fbc_20-label lang="sv_SE">Senaste klockslag</fbc_20-label>
+                    <fbc_18-title lang="sv_SE">Bifogade filer</fbc_18-title>
+                    <fbc_18-remove_trigger-label lang="sv_SE">Ta bort</fbc_18-remove_trigger-label>
+                    <fbc_18-insert_trigger-label lang="sv_SE">Lägg till fil</fbc_18-insert_trigger-label>
+                    <fbc_18-description-label lang="sv_SE">Beskrivning av filen</fbc_18-description-label>
+                    <fbc_18-filename-label lang="sv_SE">Filnamn</fbc_18-filename-label>
                 </localized_strings>
             </xf:instance>
             <xf:instance id="locale-instance" relevant="false()" src="context:fb-afk-loginSession.currentLocale"/>
@@ -214,6 +239,16 @@
                             <itemValue>false</itemValue>
                         </item>
                     </localizedEntries>
+                    <localizedEntries lang="sv_SE">
+                        <item>
+                            <itemLabel>Ja</itemLabel>
+                            <itemValue>true</itemValue>
+                        </item>
+                        <item>
+                            <itemLabel>Nej</itemLabel>
+                            <itemValue>false</itemValue>
+                        </item>
+                    </localizedEntries>
                 </local_src>
             </xf:instance>
             <xf:instance id="fbc_19_eds" xmlns="">
@@ -238,6 +273,16 @@
                         </item>
                         <item>
                             <itemLabel>Nei</itemLabel>
+                            <itemValue>false</itemValue>
+                        </item>
+                    </localizedEntries>
+                    <localizedEntries lang="sv_SE">
+                        <item>
+                            <itemLabel>Ja</itemLabel>
+                            <itemValue>true</itemValue>
+                        </item>
+                        <item>
+                            <itemLabel>Nej</itemLabel>
                             <itemValue>false</itemValue>
                         </item>
                     </localizedEntries>
@@ -313,7 +358,9 @@
                             </idega:validator>
                             <xf:alert ref="instance('error-instance')/error[@for='fbc_11']"/>
                         </xf:input>
-                        <xf:textarea bind="fbc_12_bind" id="fbc_12" type="fbc_textarea" class="enableHTMLEditor">
+                        <xf:textarea bind="fbc_12_bind"
+                            class="enableHTMLEditor"
+                            id="fbc_12" type="fbc_textarea">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_12-label[@lang=instance('localized_strings')/current_language]"/>
                         </xf:textarea>
                         <xf:select1 appearance="full" bind="fbc_19_bind"
@@ -362,7 +409,8 @@
                             </idega:validator>
                             <xf:alert ref="instance('error-instance')/error[@for='fbc_17']"/>
                         </xf:input>
-                        <xf:input bind="fbc_20_bind" id="fbc_20" type="fbc_text" class="xFormInputMask_time">
+                        <xf:input bind="fbc_20_bind"
+                            class="xFormInputMask_time" id="fbc_20" type="fbc_text">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_20-label[@lang=instance('localized_strings')/current_language]"/>
                         </xf:input>
                         <xf:group appearance="full" bind="fbc_18_bind"
