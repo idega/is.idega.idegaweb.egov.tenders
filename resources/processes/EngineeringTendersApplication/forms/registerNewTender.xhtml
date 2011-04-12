@@ -10,9 +10,8 @@
         <xf:model id="submission_model" schema="#fb-schema">
             <xf:instance id="data-instance" xmlns="">
                 <data>
-                    <form_id>4</form_id>
-                    <Identifier_number_fbc_51
-                        mapping="string_caseIdentifier" nodeType="formIdentifier"/>
+                    <form_id>134</form_id>
+                    <Identifier_number_fbc_51 mapping="string_caseIdentifier" nodeType="formIdentifier"/>
                     <Tender_name_fbc_10 mapping="string_caseDescription"/>
                     <Who_is_issuing_the_tender_fbc_11 mapping="string_issuerOfTender"/>
                     <Description_of_job_fbc_12 mapping="string_descriptionOfJob"/>
@@ -22,7 +21,7 @@
                         mapping="date_whenTheTenderShouldBeDisplayed" xsi:nil="true"/>
                     <The_last_day_to_send_in_bids_fbc_17
                         mapping="date_lastDayToSendBids" xsi:nil="true"/>
-                    <Deadline_to_send_in_bids_fbc_20 mapping="string_deadlineToSendBids"/>
+                    <Deadline_to_send_in_bids_fbc_20 mapping="string_deadlineToSendBids" />
                     <Attachments_fbc_18 mapping="files_tenderApplicationFiles">
                         <group/>
                         <entry filename="" mediatype="">
@@ -96,15 +95,14 @@
                 readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
             <xf:bind id="fbc_15_bind"
                 nodeset="When_the_tender_should_be_displayed_fbc_15"
-                readonly="instance('control-instance')/readonly = 'true'"
-                required="instance('control-instance')/required = 'true'" type="date"/>
+                required="instance('control-instance')/required = 'true'"
+                readonly="instance('control-instance')/readonly = 'true'" type="date"/>
             <xf:bind id="fbc_17_bind"
                 nodeset="The_last_day_to_send_in_bids_fbc_17"
-                readonly="instance('control-instance')/readonly = 'true'"
-                required="instance('control-instance')/required = 'true'" type="date"/>
-            <xf:bind id="fbc_20_bind"
-                nodeset="Deadline_to_send_in_bids_fbc_20"
-                readonly="instance('control-instance')/readonly = 'true'" type="xs:string"/>
+                required="instance('control-instance')/required = 'true'"
+                readonly="instance('control-instance')/readonly = 'true'" type="date"/>
+            <xf:bind id="fbc_20_bind" nodeset="Deadline_to_send_in_bids_fbc_20" type="xs:string"
+                readonly="instance('control-instance')/readonly = 'true'" />
             <xf:bind id="fbc_18_bind" nodeset="Attachments_fbc_18/group" relevant="instance('control-instance')/readonly != 'true' and instance('control-instance')/generatePdf != 'true'">
                 <xf:bind id="fbc_18_bind-entries"
                     nodeset="../entry[position() != last()]" type="xs:anyURI"/>
@@ -118,24 +116,41 @@
                 <localized_strings>
                     <default_language>en</default_language>
                     <current_language>en</current_language>
-                    <form-title lang="en">Register new tender</form-title>
-                    <form-title lang="is_IS">Útboðslýsing</form-title>
+                    
                     <page-1-label lang="en"/>
                     <page-1-label lang="is_IS"/>
+                    <page-1-label lang="sv_SE"/>
+                    
+                    <form-title lang="en">Register new tender</form-title>
+                    <form-title lang="sv_SE">Registrera nytt anbudsförfarande</form-title>
+                    <form-title lang="is_IS">Útboðslýsing</form-title>
+                    
                     <page-2-label lang="en">Form submitted</page-2-label>
                     <page-2-label lang="is_IS">Form sent</page-2-label>
+                    <page-2-label lang="sv_SE">Formulär inlämnat</page-2-label>
+                    
                     <page-1-submit_button-label lang="en">Submit</page-1-submit_button-label>
                     <page-1-submit_button-label lang="is_IS">Senda</page-1-submit_button-label>
+                    
                     <page-1-save-label lang="en">Save</page-1-save-label>
                     <page-1-save-label lang="is_IS">Vista og geyma</page-1-save-label>
+                    
                     <submission-error_message lang="en">Submission error. Please check your form!</submission-error_message>
                     <submission-error_message lang="is_IS">Villa varð við að senda formið vinsamlegast athugið hvort stjörnumerktir reitir hafi allir verið útfylltir og að engar villur séu í forminu.</submission-error_message>
+                    <submission-error_message lang="sv_SE">Inlämning fel. Kontrollera din form!</submission-error_message>
+                    
                     <submission-success_message lang="en">Your form has been received. Thank you.</submission-success_message>
                     <submission-success_message lang="is_IS">Formið hefur verið móttekið. Takk fyrir.</submission-success_message>
+                    <submission-success_message lang="sv_SE">Formuläret har mottagits. Tack.</submission-success_message>
+                    
                     <save-success_message lang="en">The form was saved</save-success_message>
                     <save-success_message lang="is_IS">Umsóknin var vistuð og þú getur nálgast hana aftur með hlekknum hér að neðan</save-success_message>
+                    <save-success_message lang="sv_SE">Formen var räddad</save-success_message>
+                    
                     <save-success_label lang="en">Saved</save-success_label>
                     <save-success_label lang="is_IS">Saved</save-success_label>
+                    <save-success_label lang="sv_SE">Sparade</save-success_label>
+                    
                     <fbc_9-text lang="is_IS">Útboðslýsing</fbc_9-text>
                     <fbc_9-text lang="en">Tender application</fbc_9-text>
                     <fbc_10-label lang="is_IS">Fyrirsögn (heiti útboðs)</fbc_10-label>
@@ -182,6 +197,7 @@
                     <fbc_51-required lang="en">Required</fbc_51-required>
                     <fbc_19-help lang="is_IS"/>
                     <fbc_401-help lang="is_IS"/>
+                    
                     <fbc_9-text lang="sv_SE">Anbudsansökan</fbc_9-text>
                     <fbc_51-label lang="sv_SE">ID Nummer</fbc_51-label>
                     <fbc_10-label lang="sv_SE">Anbudsnamn</fbc_10-label>
@@ -358,9 +374,7 @@
                             </idega:validator>
                             <xf:alert ref="instance('error-instance')/error[@for='fbc_11']"/>
                         </xf:input>
-                        <xf:textarea bind="fbc_12_bind"
-                            class="enableHTMLEditor"
-                            id="fbc_12" type="fbc_textarea">
+                        <xf:textarea bind="fbc_12_bind" id="fbc_12" type="fbc_textarea" class="enableHTMLEditor">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_12-label[@lang=instance('localized_strings')/current_language]"/>
                         </xf:textarea>
                         <xf:select1 appearance="full" bind="fbc_19_bind"
@@ -409,8 +423,7 @@
                             </idega:validator>
                             <xf:alert ref="instance('error-instance')/error[@for='fbc_17']"/>
                         </xf:input>
-                        <xf:input bind="fbc_20_bind"
-                            class="xFormInputMask_time" id="fbc_20" type="fbc_text">
+                        <xf:input bind="fbc_20_bind" id="fbc_20" type="fbc_text" class="xFormInputMask_time">
                             <xf:label model="data_model" ref="instance('localized_strings')/fbc_20-label[@lang=instance('localized_strings')/current_language]"/>
                         </xf:input>
                         <xf:group appearance="full" bind="fbc_18_bind"
