@@ -228,12 +228,12 @@ public class TendersHelperImp implements TendersHelper {
 		
 		Collection<VariableInstanceInfo> variables = null;
 		try {
-			variables = getVariablesQuerier().getVariablesByProcessInstanceIdAndVariablesNames(processInstanceIds, Arrays.asList(
+			variables = getVariablesQuerier().getVariablesByProcessInstanceIdAndVariablesNames(Arrays.asList(
 					TendersConstants.TENDER_CASE_START_DATE_VARIABLE,
 					TendersConstants.TENDER_CASE_END_DATE_VARIABLE,
 					TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE,
 					TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE
-			));
+			), processInstanceIds, false, false);
 		} catch(Exception e) {
 			LOGGER.log(Level.SEVERE, "Error getting date variables for processes: " + processInstanceIds, e);
 		}

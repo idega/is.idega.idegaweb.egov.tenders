@@ -73,7 +73,7 @@ public class TenderCasesViewer extends OpenCases {
 			
 			Collection<CasePresentation> validCases = tendersHelper.getValidTendersCases(cases.getCollection(), currentUser, locale);
 			if (ListUtil.isEmpty(validCases)) {
-				logWarning("No valid cases in " + validCases + " for current user: " + currentUser + " and locale: " + locale);
+				logWarning("No valid cases in " + cases + " for current user: " + currentUser + " and locale: " + locale);
 				container.add(new Heading1(getResourceBundle(iwc).getLocalizedString("tender_cases.no_cases_available", "There are no cases currently")));
 				return;
 			}
