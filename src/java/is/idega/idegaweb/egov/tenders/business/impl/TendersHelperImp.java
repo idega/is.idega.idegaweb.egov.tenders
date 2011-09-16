@@ -170,7 +170,6 @@ public class TendersHelperImp implements TendersHelper {
 		return casesToSort;
 	}
 	
-	@SuppressWarnings("deprecation")
 	@Transactional(readOnly=true)
 	public Collection<CasePresentation> getValidTendersCases(Collection<CasePresentation> cases, User currentUser, Locale locale) {
 		if (ListUtil.isEmpty(cases)) {
