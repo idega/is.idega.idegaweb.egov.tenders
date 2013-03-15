@@ -11,9 +11,13 @@ import java.util.List;
 
 import javax.faces.component.UIComponent;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.idega.block.process.data.Case;
 import com.idega.block.process.presentation.UserCases;
 import com.idega.block.process.presentation.beans.CasePresentation;
+import com.idega.company.business.CompanyService;
+import com.idega.company.presentation.CompanyFilter;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
@@ -27,12 +31,12 @@ import com.idega.presentation.ui.Label;
 import com.idega.presentation.ui.SelectOption;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.user.data.User;
-import com.idega.user.presentation.user.UsersFilter;
 import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.expression.ELUtil;
 
 public class CaseSubscribersManager extends BasicTenderViewer {
 
@@ -95,8 +99,28 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		return true;
 	}
 	
+	@Autowired 
+	private CompanyService companyService; 
+	
+	protected CompanyService getCompanyService() {
+		if (this.companyService == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+		
+		return this.companyService;
+	}
+	
 	private void saveSubscribers(IWContext iwc) {
-		String[] usersIDs = iwc.getParameterValues(SUBSCRIBED_USERS_PARAMETER);
+		String[] companyIDs = iwc.getParameterValues(SUBSCRIBED_USERS_PARAMETER);
+		String[] usersIDs = null;
+		Collection<String> ids = null;
+		if (!ArrayUtil.isEmpty(companyIDs)) {
+			ids = getCompanyService().getOwnersIDsForCompaniesByIDs(Arrays.asList(companyIDs));
+			if (!ListUtil.isEmpty(ids)) {
+				usersIDs = ids.toArray(new String[ids.size()]);
+			}
+		}
+		
 		if (ArrayUtil.isEmpty(usersIDs)) {
 			removeAllSubscribers(iwc);
 		} else {
@@ -382,15 +406,13 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		container.getChildren().add(usersFilterContainer);
 		usersFilterContainer.setStyleClass("formItem");
 		
-		UsersFilter usersFilter = new UsersFilter();
-		usersFilter.setAddLabel(false);
-		usersFilter.setSelectedUsers(selectedUsers);
-		usersFilter.setSelectedUserInputName(selectedUsersInputName);
-		usersFilter.setRoles(Arrays.asList(TendersConstants.TENDERS_ROLE));
-		usersFilter.setShowGroupChooser(false);
-		Label usersFilterLabel = new Label(label, usersFilter);
+		CompanyFilter companyFilter = new CompanyFilter();
+		companyFilter.setSelectedUserInputName(selectedUsersInputName);
+		companyFilter.setSelectedUsers(selectedUsers);
+		companyFilter.setRoles(Arrays.asList(TendersConstants.TENDERS_ROLE));
+		Label usersFilterLabel = new Label(label, companyFilter);
 		usersFilterContainer.add(usersFilterLabel);
-		usersFilterContainer.add(usersFilter);
+		usersFilterContainer.add(companyFilter);
 	}
 	
 	private Collection<User> getSubscribers(IWContext iwc) {
