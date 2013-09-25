@@ -489,7 +489,11 @@ public class TendersHelperImp extends DefaultSpringBean implements TendersHelper
 		uriUtil.setParameter(CasesRetrievalManager.COMMENTS_PERSISTENCE_MANAGER_IDENTIFIER, TendersCommentsPersistenceManager.BEAN_IDENTIFIER);
 		uriUtil.setParameter(CommentsViewer.AUTO_SHOW_COMMENTS, Boolean.TRUE.toString());
 
-		return uriUtil.getUri();
+		String url = uriUtil.getUri();
+		if (url.startsWith("http") && iwc.getIWMainApplication().getSettings().getBoolean("tenders.relative_link", Boolean.TRUE)) {
+			url = url.substring(url.indexOf(CoreConstants.PAGES_URI_PREFIX));
+		}
+		return url;
 	}
 
 	@Override
@@ -497,14 +501,15 @@ public class TendersHelperImp extends DefaultSpringBean implements TendersHelper
 		try {
 			ProcessInstance pi = getProcessInstance(theCase.getId());
 
+			AccessController accessController = iwc.getAccessController();
 			for (User user: users) {
 				if (!setAccessForUserPerProcess(user, pi, Boolean.FALSE)) {
 					return false;
 				}
 
 				theCase.addSubscriber(user);
+				accessController.addRoleToGroup(TendersConstants.TENDERS_ROLE, user, iwc);
 			}
-			theCase.store();
 			return true;
 		} catch(Exception e) {
 			LOGGER.log(Level.WARNING, "Error subscribing to case: " + theCase + ", for users: " + users, e);
@@ -548,16 +553,16 @@ public class TendersHelperImp extends DefaultSpringBean implements TendersHelper
 			String caseId = theCase.getId();
 			ProcessInstanceW piw = getProcessInstanceW(caseId);
 			ProcessInstance pi = piw.getProcessInstance();
-			AccessController accessControler = iwc.getAccessController();
+			AccessController accessController = iwc.getAccessController();
 			for (User user: users) {
 				if (!setAccessForUserPerProcess(user, pi, Boolean.TRUE)) {
 					return false;
 				}
 
 				theCase.removeSubscriber(user);
-				accessControler.removeRoleFromGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, user, iwc);
+				accessController.removeRoleFromGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, user, iwc);
+				accessController.removeRoleFromGroup(TendersConstants.TENDERS_ROLE, user, iwc);
 			}
-			theCase.store();
 
 			removePayers(users, piw, caseId);
 
