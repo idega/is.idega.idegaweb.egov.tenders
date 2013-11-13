@@ -3,3 +3,18 @@
 div.formItem textarea {
 	max-width: 300px !important;
 }
+
+.filterListStyle input[type="checkbox"]{
+	width:1em;
+	margin-left:1em;
+}
+
+.filterListStyle span.company-name{
+	width:auto;
+}
+
+.filterListStyle>div {
+	width: 100%;
+	display: block;
+	float: left;
+}
