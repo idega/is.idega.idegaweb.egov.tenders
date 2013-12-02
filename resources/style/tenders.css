@@ -4,17 +4,31 @@ div.formItem textarea {
 	max-width: 300px !important;
 }
 
-.filterListStyle input[type="checkbox"]{
-	width:1em;
-	margin-left:1em;
+.filterListStyle span.filtered-span{
+	width:6%!important;
+}
+.filterListStyle span.company-span{
+	width:31%!important;
 }
 
-.filterListStyle span.company-name{
-	width:auto;
+.filterListStyle>div:hover{
+	background-color:#EEEEF5;
+	cursor:pointer;
 }
 
-.filterListStyle>div {
-	width: 100%;
-	display: block;
-	float: left;
+.users-table th{
+	border-bottom:1px solid #E8E8F0;	
+}
+
+.users-table th, .users-table td{
+	padding-right:2em;
+	border:1px solid #E8E8F0;
+	width:17%;
+	word-wrap: break-word;
+}
+.users-table {
+	border:1px solid #E8E8F0;	
+}
+.users-table tr:hover{
+	background-color:rgb(232, 241, 252);
 }

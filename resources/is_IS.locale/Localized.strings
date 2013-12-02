@@ -1,1 +1,9 @@
 tender_case_manager.select_tender=Veldu \u00FAtbo\u00F0
+name=Nafn
+personal_id=Kennitala
+address=Heimilisfang
+post_code=P\u00F3stn\u00FAmer
+phone=S\u00EDman\u00FAmer
+email=Netfang
+company=fyrirt\u00E6ki
+last_login_date=S\u00ED\u00F0asta dagsetning tenging

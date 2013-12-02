@@ -330,7 +330,7 @@ public class CaseSubscribersManager extends BasicTenderViewer {
 		setCaseId(caseId);
 		
 		menu.setOnChange(new StringBuilder("TendersHelper.setSelectedTender('").append(formId).append("', '").append(menu.getId()).append("', '")
-				.append(CasesProcessor.PARAMETER_CASE_PK).append("');").toString());
+				.append(CasesProcessor.PARAMETER_CASE_PK).append("', '").append(iwrb.getLocalizedString("loading", "Loading")).append("');").toString());
 		
 		return menu;
 	}
