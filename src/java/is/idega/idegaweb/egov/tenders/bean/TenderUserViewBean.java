@@ -28,6 +28,7 @@ import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
+import com.idega.util.StringUtil;
 import com.idega.util.datastructures.map.MapUtil;
 
 @Service(TenderUserViewBean.BEAN_NAME)
@@ -113,17 +114,19 @@ public class TenderUserViewBean extends DefaultSpringBean {
 				phones.addAll(userPhones);
 			}
 			Map<String, Boolean> addedPhones = new HashMap<String, Boolean>();
+			boolean phoneAdded = false;
 			for (Iterator<Phone> phonesIter = phones.iterator(); phonesIter.hasNext();) {
 				Phone phone = phonesIter.next();
 				String number = phone.getNumber();
-				if (addedPhones.containsKey(number)) {
-					continue;
-				}
+				if (!StringUtil.isEmpty(number) && !addedPhones.containsKey(number)) {
+					addedPhones.put(number, Boolean.TRUE);
 
-				addedPhones.put(number, Boolean.TRUE);
-				phonesValue.append(number);
-				if (phonesIter.hasNext()) {
-					phonesValue.append(CoreConstants.COMMA).append(CoreConstants.SPACE);
+					if (phoneAdded) {
+						phonesValue.append(CoreConstants.COMMA).append(CoreConstants.SPACE);
+					} else {
+						phoneAdded = true;
+					}
+					phonesValue.append(number);
 				}
 			}
 			userData.setPhones(phonesValue.toString());
@@ -138,14 +141,12 @@ public class TenderUserViewBean extends DefaultSpringBean {
 			for (Iterator<Email> emailsIter = emails.iterator(); emailsIter.hasNext();) {
 				Email email = emailsIter.next();
 				String address = email.getEmailAddress();
-				if (addedEmails.containsKey(address)) {
-					continue;
-				}
-
-				addedEmails.put(address, Boolean.TRUE);
-				emailsValue.append(address);
-				if (emailsIter.hasNext()) {
-					emailsValue.append(CoreConstants.COMMA).append(CoreConstants.SPACE);
+				if (!StringUtil.isEmpty(address) && !addedEmails.containsKey(address)) {
+					addedEmails.put(address, Boolean.TRUE);
+					emailsValue.append(address);
+					if (emailsIter.hasNext()) {
+						emailsValue.append(CoreConstants.COMMA).append(CoreConstants.SPACE);
+					}
 				}
 			}
 			userData.setEmails(emailsValue.toString());
@@ -162,100 +163,6 @@ public class TenderUserViewBean extends DefaultSpringBean {
 			}
 		});
 		return data;
-
-		/*Collection<User> users;
-		try {
-			users = getUserBusiness().getUserHome().findAllUsers();
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed getting users", e);
-			users = Collections.emptyList();
-		}
-		CompanyBusiness companyBusiness = null;
-		try {
-			companyBusiness = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(), CompanyBusiness.class);
-		} catch (IBOLookupException e) {
-			getLogger().log(Level.WARNING, "Failed getting users", e);
-			users = Collections.emptyList();
-		}
-		List<TenderUserData> tendersUsers = new ArrayList<TenderUserData>(users.size());
-		LoginRecordHome loginrecorshoHome;
-		try {
-			loginrecorshoHome = (LoginRecordHome) IDOLookup.getHome(LoginRecord.class);
-		} catch (IDOLookupException e) {
-			loginrecorshoHome = null;
-			getLogger().log(Level.WARNING, "Failed getting loginrecordhome", e);
-		}
-		Locale locale = getCurrentLocale();
-		for(User user : users){
-			TenderUserData tenderUserData = new TenderUserData();
-			tendersUsers.add(tenderUserData);
-
-			tenderUserData.setName(user.getName());
-			Collection<Phone> phones =  user.getPhones();
-			if(!ListUtil.isEmpty(phones)){
-				StringBuilder builder = new StringBuilder();
-				boolean added = false;
-				for(Phone phone : phones){
-					String number = phone.getNumber();
-					if(StringUtil.isEmpty(number)){
-						continue;
-					}
-					if(added){
-						builder.append(", ");
-					}else{
-						added = true;
-					}
-					builder.append(number);
-				}
-				tenderUserData.setPhones(builder.toString());
-			}
-			Collection<Email> emails =  user.getEmails();
-			if(!ListUtil.isEmpty(emails)){
-				StringBuilder builder = new StringBuilder();
-				boolean added = false;
-				for(Email email : emails){
-					String emailAddress = email.getEmailAddress();
-					if(StringUtil.isEmpty(emailAddress)){
-						continue;
-					}
-					if(added){
-						builder.append(", ");
-					}else{
-						added = true;
-					}
-					builder.append(emailAddress);
-				}
-				tenderUserData.setEmails(builder.toString());
-			}
-			tenderUserData.setPersonalId(user.getPersonalID());
-			Collection<Company> companies = companyBusiness.getCompaniesForUser(user);
-			if(!ListUtil.isEmpty(companies)){
-				StringBuilder builder = new StringBuilder();
-				boolean added = false;
-				for(Company company : companies){
-					String name = company.getName();
-					if(StringUtil.isEmpty(name)){
-						continue;
-					}
-					if(added){
-						builder.append(", ");
-					}else{
-						added = true;
-					}
-					builder.append(name);
-				}
-				tenderUserData.setCompany(builder.toString());
-			}
-			try {
-				LoginRecord loginRecord = loginrecorshoHome.findLastLoginRecord(user);
-				String date = new IWTimestamp(loginRecord.getLogInStamp()).getLocaleDateAndTime(locale, IWTimestamp.SHORT, IWTimestamp.SHORT);
-				tenderUserData.setLastLoginDate(date);
-			} catch (FinderException e) {
-//				getLogger().log(Level.WARNING, "Failed getting login record of user "+user.getId(), e);
-			}
-		}
-
-		return tendersUsers;*/
 	}
 
 	public UserBusiness getUserBusiness(){
