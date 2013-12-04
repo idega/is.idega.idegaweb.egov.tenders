@@ -1,18 +1,31 @@
 package is.idega.idegaweb.egov.tenders.bean;
 
-public class TenderUserData {
-	
+import java.io.Serializable;
+import java.util.Date;
+
+public class TenderUserData implements Serializable {
+
+	private static final long serialVersionUID = 535491709181054599L;
+
 	private String name;
 
 	private String company;
-	
+
 	private String lastLoginDate;
-	
+	private Date loginDate;
+
 	private String personalId;
-	
+
 	private String phones;
-	
+
 	private String emails;
+
+	public TenderUserData(String name, Date loginDate) {
+		super();
+
+		this.name = name;
+		this.loginDate = loginDate;
+	}
 
 	public String getName() {
 		return name;
@@ -61,4 +74,13 @@ public class TenderUserData {
 	public void setEmails(String emails) {
 		this.emails = emails;
 	}
+
+	public Date getLoginDate() {
+		return loginDate;
+	}
+
+	public void setLoginDate(Date loginDate) {
+		this.loginDate = loginDate;
+	}
+
 }
