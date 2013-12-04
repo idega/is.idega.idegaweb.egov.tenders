@@ -1,0 +1,54 @@
+<div 
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+   	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	>
+<table class="users-table">
+	<thead>
+		<tr>
+			<th>
+				#{localizedStrings['is.idega.idegaweb.egov.tenders']['name']}
+			</th>
+			<th>
+				#{localizedStrings['is.idega.idegaweb.egov.tenders']['company']}
+			</th>
+			<th>
+				#{localizedStrings['is.idega.idegaweb.egov.tenders']['personal_id']}
+			</th>
+			<th>
+				#{localizedStrings['is.idega.idegaweb.egov.tenders']['phone']}
+			</th>
+			<th>
+				#{localizedStrings['is.idega.idegaweb.egov.tenders']['email']}
+			</th>
+			<th>
+				#{localizedStrings['is.idega.idegaweb.egov.tenders']['last_login_date']}
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<ui:repeat value="#{tenderUserViewBean.usersData}" var="user">
+			<tr>
+				<td>
+					#{user.name}
+				</td>
+				<td>
+					#{user.company}
+				</td>
+				<td>
+					#{user.personalId}
+				</td>
+				<td>
+					#{user.phones}
+				</td>
+				<td>
+					#{user.emails}
+				</td>
+				<td>
+					#{user.lastLoginDate}
+				</td>
+			</tr>
+		</ui:repeat>
+	</tbody>
+</table>
+</div>

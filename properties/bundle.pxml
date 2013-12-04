@@ -56,7 +56,7 @@
             <type>map</type>
           </key>
           <key>
-            <name>is.idega.idegaweb.egov.tenders.presentation.UserDataView.pxml</name>
+            <name>is.idega.idegaweb.egov.tenders.presentation.UserDataView</name>
             <value>
               <map>
                 <key>
