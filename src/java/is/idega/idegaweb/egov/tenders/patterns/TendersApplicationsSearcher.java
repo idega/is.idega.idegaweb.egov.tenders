@@ -22,17 +22,19 @@ public class TendersApplicationsSearcher extends DefaultSubjectPatternFinder {
 
 	private static final String IDENTIFIER_REGULAR_EXPRESSION = "\\d+-[UF]\\d\\d";
 	private static final Pattern IDENTIFIER_PATTERN = Pattern.compile(IDENTIFIER_REGULAR_EXPRESSION);
-	
+
 	public TendersApplicationsSearcher() {
 		super();
-		
-		setSubjectPattern(IDENTIFIER_PATTERN);
+
+		addPattern(IDENTIFIER_PATTERN);
 	}
-	
+
+	@Override
 	public Map<String, FoundMessagesInfo> getSearchResultsFormatted(EmailParams params) throws MessagingException {
 		return super.getCaseIdentifierSearchResultsFormatted(params);
 	}
 
+	@Override
 	public MessageParserType getParserType() {
 		return MessageParserType.BPM;
 	}
