@@ -1,18 +1,13 @@
 package is.idega.idegaweb.egov.tenders;
 
-import java.util.Arrays;
 import java.util.Collection;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.block.process.data.CaseCode;
 import com.idega.block.process.data.CaseCodeHome;
 import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWBundleStartable;
-import com.idega.jbpm.data.VariableInstanceQuerier;
 import com.idega.util.ListUtil;
-import com.idega.util.expression.ELUtil;
 
 /**
  * Bundle starter for Tenders project. Creates case code for Tenders cases.
@@ -24,26 +19,9 @@ import com.idega.util.expression.ELUtil;
  */
 public class IWBundleStarter implements IWBundleStartable {
 
-	@Autowired
-	private VariableInstanceQuerier querier;
-
-	private VariableInstanceQuerier getVariableInstanceQuerier() {
-		if (querier == null) {
-			ELUtil.getInstance().autowire(this);
-		}
-		return querier;
-	}
-
 	@Override
 	public void start(IWBundle starterBundle) {
 		createTendersCaseCode();
-
-		getVariableInstanceQuerier().loadVariables(Arrays.asList(
-				TendersConstants.TENDER_CASE_START_DATE_VARIABLE,
-				TendersConstants.TENDER_CASE_END_DATE_VARIABLE,
-				TendersConstants.TENDER_CASE_IS_PRIVATE_VARIABLE,
-				TendersConstants.TENDER_CASE_IS_PAYMENT_VARIABLE)
-		);
 	}
 
 	@Override

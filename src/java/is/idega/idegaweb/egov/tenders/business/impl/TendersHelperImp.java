@@ -496,6 +496,7 @@ public class TendersHelperImp extends DefaultSpringBean implements TendersHelper
 		return url;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean doSubscribeToCase(IWContext iwc, Collection<User> users, Case theCase) {
 		try {
@@ -560,8 +561,9 @@ public class TendersHelperImp extends DefaultSpringBean implements TendersHelper
 				}
 
 				theCase.removeSubscriber(user);
-				accessController.removeRoleFromGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, user, iwc);
-				accessController.removeRoleFromGroup(TendersConstants.TENDERS_ROLE, user, iwc);
+				Integer userId = Integer.valueOf(user.getId());
+				accessController.removeRoleFromGroup(TendersConstants.TENDER_CASES_INVITED_ROLE, userId, iwc);
+				accessController.removeRoleFromGroup(TendersConstants.TENDERS_ROLE, userId, iwc);
 			}
 
 			removePayers(users, piw, caseId);
